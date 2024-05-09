@@ -1,0 +1,34 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+*{-webkit-tap-highlight-color: transparent;}
+input:-webkit-autofill,
+input:-webkit-autofill:hover, 
+input:-webkit-autofill:focus, 
+input:-webkit-autofill:active{
+    -webkit-box-shadow: 0 0 0 30px white inset !important;
+}
+::-webkit-scrollbar {
+    display: none;
+}
+body{
+    font-family: 'Inter';
+}
+input[type=number]::-webkit-inner-spin-button, 
+input[type=number]::-webkit-outer-spin-button { 
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    margin: 0; 
+}
+select {
+  -webkit-appearance: menulist-button;
+  color: #94A9A9;
+}
+
+select:invalid {
+  color: green;
+}
+input[type="date"]::placeholder {
+  color: #999; /* Change the color to your desired color */
+}
