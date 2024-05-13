@@ -15,9 +15,12 @@ import { GoHeartFill } from "react-icons/go";
 import { RiShareForwardLine } from "react-icons/ri";
 import ViewtimeLine from './ViewtimeLine'
 import ViewBio from './ViewBio'
+import cross from "../images/cross.png"
 import ViewMedia from './ViewMedia'
 import ViewTribute from './ViewTribute'
 import ViewDetails from './ViewDetails'
+import Share from './Share'
+import { Box, Modal } from '@mui/material'
 
 export default function ViewProfile() {
     let [slide,setSlide]=useState()
@@ -78,6 +81,13 @@ export default function ViewProfile() {
       setFilled(!filled);
     };
     console.log(filled)
+    let [isModalOpen,setisModalOpen] =useState(false)
+    let handleopenshare =()=>{
+      setisModalOpen(true)
+   }
+   let handleCloseshare =()=>{
+      setisModalOpen(false)
+   }
   return (
   <>
   <div className='flex  items-center flex-col w-[100%] min-h-[100vh] bg-[#f0f0f0] relative'>
@@ -105,7 +115,7 @@ export default function ViewProfile() {
   <div  className='border flex justify-center items-center border-[#E5D6C5] bg-white w-[30px] h-[30px] rounded-[50%]'>
   {filled ? <GoHeartFill className='text-[#062A27] text-[20px]' onClick={()=>handleClick()}/> : <GoHeart className='text-[#062A27] text-[20px]' onClick={()=>handleClick()}/>}
 </div>
-  <div className='border ml-3 flex justify-center items-center border-[#E5D6C5] bg-white w-[30px] h-[30px] rounded-[50%]'>
+  <div onClick={handleopenshare} className='border ml-3 flex justify-center items-center border-[#E5D6C5] bg-white w-[30px] h-[30px] rounded-[50%]'>
   <RiShareForwardLine className='text-[#062A27] text-[20px]'/>
   </div>
   </div>
@@ -148,6 +158,47 @@ export default function ViewProfile() {
   <br></br>
 
   </div>
+  <Modal
+open={isModalOpen}
+onClose={handleCloseshare}
+aria-labelledby="image-modal"
+aria-describedby="image-modal-description"
+>
+<Box
+  sx={{
+    position: 'absolute',
+    top: '50%',
+    left: '50%',
+    transform: 'translate(-50%, -50%)',
+    width: 340,
+    bgcolor: 'white',
+    borderRadius: '10px',
+    background: '#FFF',
+    outline: 'none',
+    boxShadow: 24,
+    maxHeight: "600px",
+    overflowY: "auto",
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    flexDirection: "column",
+    '&::-webkit-scrollbar': {
+      display: 'none',
+    },
+  }}
+>
+<div className='flex justify-end w-[90%] mt-3'>
+<div onClick={handleCloseshare} className='flex justify-center items-center border border-[#E5D6C5] w-[25px] h-[25px] rounded-[50%]'>
+<img className='w-[10px]' src={cross}/>
+</div>
+</div>
+  <div className="flex justify-center items-center mt-2 w-[100%]">
+    <Share />
+    
+  </div>
+  <br></br>
+</Box>
+</Modal>
   </>
   )
 }

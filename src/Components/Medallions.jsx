@@ -37,8 +37,8 @@ export default function Medallions() {
    </div>
    </div>
    <div className='w-[90%] flex items-center justify-between mb-5 mt-5'>
-   <button onClick={handleNavigateview} className=' border border-[#062A27] rounded-[30px] w-[140px] h-[40px] flex justify-center items-center Satoshi-bold'><img className='w-[20px] h-[20px] mr-2' src={eye}/>View</button>
-   <button onClick={handleNavigate} className='bg-[#062A27] text-[white] rounded-[30px] w-[140px] h-[40px] flex justify-center items-center Satoshi-bold'> <img className='w-[16px] mr-2' src={edit}/>Edit</button>
+   <button onClick={handleNavigateview} className=' border border-[#062A27] rounded-[30px] w-[47%] h-[40px] flex justify-center items-center Satoshi-bold'><img className='w-[20px] h-[20px] mr-2' src={eye}/>View</button>
+   <button onClick={handleNavigate} className='bg-[#062A27] text-[white] rounded-[30px] w-[47%] h-[40px] flex justify-center items-center Satoshi-bold'> <img className='w-[16px] mr-2' src={edit}/>Edit</button>
    </div>
    </div>
    <div className='flex justify-center items-center rounded-[10px] border border-[f0f0f0] shadow-md mt-5 flex-col w-[90%]'>
@@ -52,8 +52,8 @@ export default function Medallions() {
    </div>
    </div>
    <div className='w-[90%] flex items-center justify-between mb-5 mt-5'>
-   <button onClick={handleNavigateview} className=' border border-[#062A27] rounded-[30px] w-[140px] h-[40px] flex justify-center items-center Satoshi-bold'><img className='w-[20px] h-[20px] mr-2' src={eye}/>View</button>
-   <button onClick={handleNavigate} className='bg-[#062A27] text-[white] rounded-[30px] w-[140px] h-[40px] flex justify-center items-center Satoshi-bold'> <img className='w-[16px] mr-2' src={edit}/>Edit</button>
+   <button onClick={handleNavigateview} className=' border border-[#062A27] rounded-[30px] w-[47%] h-[40px] flex justify-center items-center Satoshi-bold'><img className='w-[20px] h-[20px] mr-2' src={eye}/>View</button>
+   <button onClick={handleNavigate} className='bg-[#062A27] text-[white] rounded-[30px] w-[47%] h-[40px] flex justify-center items-center Satoshi-bold'> <img className='w-[16px] mr-2' src={edit}/>Edit</button>
    </div>
    </div>
    </div>

@@ -10,6 +10,8 @@ import { FaPlus } from 'react-icons/fa6'
 import Timeline from './Timeline'
 import CreatenewProfile from './CreatenewProfile'
 import Media from './Media'
+import { useNavigate } from 'react-router-dom'
+import Sidebar from './Sidebar'
 
 export default function Editprofile() {
   const [timeline,setfavorites]=useState(true)
@@ -35,12 +37,28 @@ export default function Editprofile() {
         setMedallions(true)
   
     }
-  
+    const nevigate = useNavigate();
+    const handleNavigateview = () => {
+        nevigate("/viewprofile");
+    };
+    let [slide,setSlide]=useState()
+    let handleslide=()=>{
+      setSlide(!slide);
+  }
+  let handleslideclose=()=>{
+      setSlide(false)
+  }
   return (
   <>
-  <div className='flex  items-center flex-col w-[100%] min-h-[100vh] bg-[#f0f0f0]'>
+  <div className='flex  items-center flex-col w-[100%] min-h-[100vh] bg-[#f0f0f0] relative'>
+  {slide && <div className='h-[100%] w-[100%] absolute bg-[#062A27] bg-opacity-50 z-50 '>  </div>}
+  {slide &&
+      <div className='flex  justify-start w-[100%] flex-col  ' >
+  <Sidebar
+  handleslideclose={handleslideclose}
+  /></div>}
   <div className='flex justify-between items-center w-[90%] mt-5'>
-  <div className='border flex justify-center items-center border-[#E5D6C5] bg-white w-[40px] h-[40px] rounded-[50%]'>
+  <div onClick={handleslide} className='border flex justify-center items-center border-[#E5D6C5] bg-white w-[40px] h-[40px] rounded-[50%]'>
   <img className='w-[24px] ' src={menu}/>
   </div>
   <p className='font-bold text-[22px] text-[#062A27]'>Eternal</p>
@@ -68,7 +86,7 @@ export default function Editprofile() {
   <h1 className='text-[16px] font-bold mt-1 text-[#062A27]'>Mis Alza</h1>
   <h1 className='text-[14px] font-bold  mt-1 text-[#062A27]'>Jan 01, 1950 - Nov 05, 2023</h1>
   <div className='w-[100%] flex justify-center items-center mt-3'>
-  <button  className='bg-[#062A27] text-[white] rounded-[30px] w-[150px] h-[40px] flex justify-center items-center'> <img className='w-[20px] mr-2' src={eye}/>Public View</button>
+  <button onClick={handleNavigateview}   className='bg-[#062A27] text-[white] rounded-[30px] w-[150px] h-[40px] flex justify-center items-center'> <img className='w-[20px] mr-2' src={eye}/>Public View</button>
   <div className='border flex justify-center items-center border-[#062A27] ml-5 bg-white w-[40px] h-[40px] rounded-[50%]'>
   <IoIosMore className='w-[24px] text-[#062A27] ' />
   </div>

@@ -118,7 +118,7 @@ export default function Timeline() {
     {custom &&
         <div className='flex  items-center w-[100%] flex-col'>
         <div className='flex w-[90%] justify-between items-center mt-5'>
-        <img onClick={handlebackEvent} className='w-[20px]' src={back}/>
+        <img onClick={handlebackEvent} className='w-[25px] h-[25px]' src={back}/>
         <h1 className='text-[#040A1B] text-[16px] font-bold'>Add an important event</h1>
         <div></div>
         </div>

@@ -7,12 +7,16 @@ import email from "../images/email.png"
 import Location from "../images/Location.png"
 import calender from "../images/Calendar.png"
 import Medallio from "../Components/Medallions"
+import Sidebar from '../Components/Sidebar'
+import Myfavorites from '../Components/Myfavorites'
+import Posts from '../Components/Posts'
+import MyaccountEdit from '../Components/MyaccountEdit'
 export default function Home() {
     const [favorites,setfavorites]=useState(true)
     const [post,setpost]=useState(false)
     const [Medallions,setMedallions]=useState(false)
     const [account,setaccount]=useState(false)
-
+    let [slide,setSlide]=useState()
     const handlefvrt =()=>{
         setfavorites(true)
         setpost(false)
@@ -36,15 +40,34 @@ export default function Home() {
         setpost(false)
         setMedallions(false)
         setaccount(true)
+        setSlide(false)
+    }
+   
+    
+    let handleslide=()=>{
+        setSlide(!slide);
+    }
+    let handleslideclose=()=>{
+        setSlide(false)
     }
   return (
     <>
-    <div className='flex  items-center flex-col w-[100%] min-h-[100vh] bg-[#f0f0f0]'>
+    <div className='flex  items-center flex-col w-[100%] min-h-[100vh] bg-[#f0f0f0] relative'>
+    {slide && <div className='h-[100%] w-[100%] absolute bg-[#062A27] bg-opacity-50 z-50 '>  </div>}
+    {slide &&
+        <div className='flex  justify-start w-[100%] flex-col  ' >
+    <Sidebar
+    handleslideclose={handleslideclose}
+    handleaccount={handleaccount}
+    /></div>}
     <div className='flex justify-between items-center w-[90%] mt-5'>
-    <div className='border flex justify-center items-center border-[#E5D6C5] bg-white w-[40px] h-[40px] rounded-[50%]'>
+    <div onClick={handleslide} className='border flex justify-center items-center border-[#E5D6C5] bg-white w-[40px] h-[40px] rounded-[50%]'>
     <img className='w-[24px] ' src={menu}/>
     </div>
-    <p className='font-bold text-[22px] text-[#062A27] Satoshi-bold'>Eternal</p>
+    <div className='flex justify-start  flex-col '>
+    <p className='text-[14px] text-[#062A27]  orelega-one-regular'>The</p>
+    <p className='text-[16px] text-[#062A27] mt-[-5px] flex '><p className='orelega-one-regular text-[20px]'>Sentiments Co.</p> &trade;</p>
+    </div>
     <div className='border flex justify-center items-center border-[#E5D6C5] bg-white w-[40px] h-[40px] rounded-[50%]'>
     <img className='w-[24px] ' src={Notification}/>
     </div>
@@ -72,8 +95,8 @@ export default function Home() {
     </div>
     </div>
     </div>
-    <div className='w-[90%] rounded-[20px]  bg-white flex  mt-8 items-center flex-col'>
-    <div className='flex justify-between items-center w-[100%] border-b overflow-x-scroll'>
+    <div className='w-[90%]  rounded-[20px] border  bg-white flex  mt-8 items-center flex-col'>
+    <div className='flex justify-between items-center w-[100%] border-b overflow-x-scroll '>
     <p className='p-3 whitespace-nowrap cursor-pointer text-[#5F6161] ' onClick={handlefvrt} style={favorites ? { borderBottom: "2px solid black",color:"#062A27",fontFamily:"Satoshi-bold" } : {}} >My favorites</p>
     <p className='p-3 cursor-pointer text-[#5F6161]' onClick={handlepost} style={post ? { borderBottom: "2px solid black",color:"#062A27",fontFamily:"Satoshi-bold" } : {}}>Posts</p>
     <p className='p-3 cursor-pointer text-[#5F6161]' onClick={handleMedallions} style={Medallions ? { borderBottom: "2px solid black",color:"#062A27",fontFamily:"Satoshi-bold" } : {}}>Medallions</p>
@@ -82,6 +105,15 @@ export default function Home() {
    {Medallions &&
 <Medallio/>
    }
+   {favorites &&
+    <Myfavorites/>
+       }
+       {post &&
+        <Posts/>
+           }
+           {account &&
+            <MyaccountEdit/>
+               }
    <br></br>
     </div>
     <br></br>

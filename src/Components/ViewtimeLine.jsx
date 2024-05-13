@@ -25,7 +25,7 @@ export default function ViewtimeLine() {
     <div className='w-[70px] h-[30px] font-bold Satoshi-bold flex justify-center items-center rounded-[5px] bg-[#D3E8E6]'>
       {item.year}
     </div>
-    <div className='flex justify-center mt-4 h-[90px] items-center border-l border-dashed border-[#5F6161]'>
+    <div className='flex justify-center mt-4 h-[65px] items-center border-l border-dashed border-[#5F6161]'>
       <img className='w-[53px] ml-3 h-[53px] rounded-[4px] object-cover' src={item.image} alt='Couple' />
       <p className='text-[#5F6161] ml-3'>{item.event}</p>
     </div>

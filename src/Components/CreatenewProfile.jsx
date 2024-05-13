@@ -33,28 +33,30 @@ export default function CreatenewProfile({handleback,bio}) {
    {!bio && <h1 className='mt-2 font-bold text-[13px] text-[#5F6161]'>Start by entering as much info as you can about your loved one. You will have a chance to update this later.</h1>}
    <div className='flex justify-between items-center w-[100%] mt-5'>
    <div className='flex justify-start flex-col'>
-   <label>First Name *</label>
+   <label className='mb-2'>First Name *</label>
    <input type='text' placeholder='First Name' className='w-[95%] outline-none border border-[#C9C9C9]  h-[35px] rounded-[5px] pl-3 pr-3'/>
    </div>
    <div className='flex justify-start flex-col'>
-   <label>Last Name *</label>
+   <label className='mb-2'>Last Name *</label>
    <input type='text' placeholder='Last Name' className='w-[95%] outline-none border border-[#C9C9C9]  h-[35px] rounded-[5px] pl-3 pr-3'/>
    </div>
    </div>
    <div className='flex justify-start flex-col mt-3'>
-   <label>Title</label>
+   <label className='mb-2'>Title</label>
    <input type='text' placeholder='Example Jr - Sr' className='w-[100%] outline-none border border-[#C9C9C9]  h-[35px] rounded-[5px] pl-3 pr-3'/>
-   <div className='flex justify-start flex-col mt-3'>
-      <label htmlFor="relationship">Relationship</label>
-      <select id="relationship" value={selectedRelationship} onChange={handleRelationshipChange}  className='w-[100%] outline-none border border-[#C9C9C9]  h-[35px] rounded-[5px] pl-3'>
+   <div className='flex justify-center   w-[100%] flex-col mt-3 '>
+      <label className='mb-2' htmlFor="relationship">Relationship</label>
+      <div className='outline-none border flex justify-start items-center border-[#C9C9C9] w-[100%]  h-[35px] rounded-[5px] pl-3'>
+      <select id="relationship" value={selectedRelationship} onChange={handleRelationshipChange}  className='w-[98%] outline-none border-none'>
         <option value="" >Select relationship</option>
         <option value="friend">Friend</option>
         <option value="family">Family</option>
         <option value="colleague">Colleague</option>
       </select>
+      </div>
     </div>
     <div className='flex justify-start flex-col mt-3'>
-    <label>Profile Picture</label>
+    <label className='mb-2'>Profile Picture</label>
     <input ref={fileInputRef} type="file" style={{ display: 'none' }} />
     <button onClick={handleLuPlusCircleClick} className='w-[100%] outline-none border underline text-[#062A27] font-bold Satoshi-bold border-[#062A27] bg-[#F1F9F8] border-dashed  h-[40px] rounded-[5px] '>Choose File</button>
   </div>
@@ -103,7 +105,7 @@ export default function CreatenewProfile({handleback,bio}) {
   <div className='text-[16px] font-bold Satoshi-bold mt-8'>HEADLINE TEXT</div>
   <h1 className='mt-2 font-bold text-[13px] text-[#5F6161]'>This headline text is the one that shows above the name of the person. If this field is null, the headline text won’t be added.</h1>
   <div className='flex justify-start flex-col mt-5'>
-  <label>Test or phrase</label>
+  <label className='mb-2'>Test or phrase</label>
   <input type='text' placeholder='In loving memory of' className='w-[100%] outline-none border border-[#C9C9C9]  h-[35px] rounded-[5px] pl-3 pr-3'/>
   </div>
   <div className='  w-[100%] justify-start mt-5'>
@@ -118,58 +120,58 @@ export default function CreatenewProfile({handleback,bio}) {
   </div>
   <p className='text-[16px] font-bold Satoshi-bold mt-8'>OBITUARY INFORMATION</p>
   <div className='flex justify-start flex-col mt-3'>
-  <label>Link to Obituary:</label>
+  <label className='mb-2'>Link to Obituary:</label>
   <input type='text' className='w-[100%] outline-none border border-[#C9C9C9]  h-[35px] rounded-[5px] pl-3 pr-3'/>
   </div>
   <div className='flex justify-start flex-col mt-3'>
-  <label>Bio information:</label>
+  <label className='mb-2'>Bio information:</label>
   <textarea type='text'  className='w-[100%] outline-none border border-[#C9C9C9] min-h-[100px]  h-[35px] rounded-[5px] pl-3 pr-3'/>
   </div>
   <p className='text-[16px] font-bold Satoshi-bold mt-8'>LIFE TIME</p>
   <div className='flex justify-start flex-col mt-3'>
-  <label>Birth Date *</label>
+  <label className='mb-2'>Birth Date *</label>
   <input type='date' className='w-[100%] outline-none border border-[#C9C9C9]  h-[35px] rounded-[5px] pl-3 pr-3'/>
   </div>
   <div className='flex justify-start flex-col mt-3'>
-  <label>Death Date *</label>
+  <label className='mb-2'>Death Date *</label>
   <input type='date' className='w-[100%] outline-none border border-[#C9C9C9]  h-[35px] rounded-[5px] pl-3 pr-3'/>
   </div>
   {!bio && <p className='text-[16px] font-bold Satoshi-bold mt-8'>LOCATION DETAILS</p> }
   {bio && <p className='text-[16px] font-bold Satoshi-bold mt-8'>LOCATION BEFORE DEATH</p> }
   <div className='flex justify-start flex-col mt-3'>
-  <label>City:</label>
+  <label className='mb-2'>City:</label>
   <input type='text' className='w-[100%] outline-none border border-[#C9C9C9]  h-[35px] rounded-[5px] pl-3 pr-3'/>
   </div>
   <div className='flex justify-start flex-col mt-3'>
-  <label>State:</label>
+  <label className='mb-2'>State:</label>
   <input type='text' className='w-[100%] outline-none border border-[#C9C9C9]  h-[35px] rounded-[5px] pl-3 pr-3'/>
   </div>
   {bio &&
     <>
     <p className='text-[16px] font-bold Satoshi-bold mt-8'>CEMETERY INFORMATION</p> 
     <div className='flex justify-start flex-col mt-3'>
-  <label>Cemetery name:</label>
+  <label className='mb-2'>Cemetery name:</label>
   <input type='text' className='w-[100%] outline-none border border-[#C9C9C9]  h-[35px] rounded-[5px] pl-3 pr-3'/>
   </div>
   <div className='flex justify-start flex-col mt-3'>
-  <label>Cemetery plot number:</label>
+  <label className='mb-2'>Cemetery plot number:</label>
   <input type='text' className='w-[100%] outline-none border border-[#C9C9C9]  h-[35px] rounded-[5px] pl-3 pr-3'/>
   </div>
   <div className='flex justify-start flex-col mt-3'>
-  <label>Cemetery city:</label>
+  <label className='mb-2'>Cemetery city:</label>
   <input type='text' className='w-[100%] outline-none border border-[#C9C9C9]  h-[35px] rounded-[5px] pl-3 pr-3'/>
   </div>
   <div className='flex justify-start flex-col mt-3'>
-  <label>Cemetery state:</label>
+  <label className='mb-2'>Cemetery state:</label>
   <input type='text' className='w-[100%] outline-none border border-[#C9C9C9]  h-[35px] rounded-[5px] pl-3 pr-3'/>
   </div>
   <div className='flex justify-start flex-col mt-3'>
-  <label>Cemetery plot location:</label>
+  <label className='mb-2'>Cemetery plot location:</label>
   <input type='text' className='w-[100%] outline-none border border-[#C9C9C9]  h-[35px] rounded-[5px] pl-3 pr-3'/>
   </div>
   <p className='text-[16px] font-bold Satoshi-bold mt-8'>DONATIONS</p> 
   <div className='flex justify-start flex-col mt-3'>
-  <label>Donations URL:</label>
+  <label className='mb-2'>Donations URL:</label>
   <input type='text' className='w-[100%] outline-none border border-[#C9C9C9]  h-[35px] rounded-[5px] pl-3 pr-3'/>
   </div>
   </>
@@ -177,7 +179,7 @@ export default function CreatenewProfile({handleback,bio}) {
   <p className='text-[16px] font-bold mt-8 Satoshi-bold'>QUOTE SECTION</p>
   <h1 className='mt-2 font-bold text-[13px] text-[#5F6161]'>This headline text is the one that shows above the name of the person.</h1>
   <div className='flex justify-start flex-col mt-3'>
-  <label>Text or phrase:</label>
+  <label className='mb-2'>Text or phrase:</label>
   <textarea type='text' placeholder='The way to get started is to quit talking and begin doing. -Walt Disney'  className='w-[100%] outline-none border border-[#C9C9C9] min-h-[100px]  h-[35px] rounded-[5px] pl-3 pt-2 pr-3'/>
   </div>
   <button  className='bg-[#062A27] rounded-[30px] h-[45px] mt-5 w-[100%] font-[600] text-[16px] cursor-pointer Satoshi-bold text-white'>Save Changes</button>
