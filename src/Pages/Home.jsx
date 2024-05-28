@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import menu from "../images/Hamburger menu.png"
 import Notification from "../images/Notification.png"
 import profile from "../images/Ellipse 2723.png"
@@ -11,8 +11,15 @@ import Sidebar from '../Components/Sidebar'
 import Myfavorites from '../Components/Myfavorites'
 import Posts from '../Components/Posts'
 import MyaccountEdit from '../Components/MyaccountEdit'
+import { useParams } from 'react-router-dom'
 export default function Home() {
     const [favorites,setfavorites]=useState(true)
+    const [navigate,setnavigate]=useState({
+        fav:true,
+        post:false,
+
+    })
+  
     const [post,setpost]=useState(false)
     const [Medallions,setMedallions]=useState(false)
     const [account,setaccount]=useState(false)
@@ -50,6 +57,19 @@ export default function Home() {
     let handleslideclose=()=>{
         setSlide(false)
     }
+
+    useEffect(() => {
+        const path = window.location.pathname;
+        if (path === "/home/myAccount") {
+            setfavorites(false)
+        setpost(false)
+        setMedallions(false)
+        setaccount(true)
+        setSlide(false)
+        }
+      }, []);
+    
+
   return (
     <>
     <div className='flex  items-center flex-col w-[100%] min-h-[100vh] bg-[#f0f0f0] relative'>
@@ -59,6 +79,7 @@ export default function Home() {
     <Sidebar
     handleslideclose={handleslideclose}
     handleaccount={handleaccount}
+    setaccount={setaccount}
     /></div>}
     <div className='flex justify-between items-center w-[90%] mt-5'>
     <div onClick={handleslide} className='border flex justify-center items-center border-[#E5D6C5] bg-white w-[40px] h-[40px] rounded-[50%]'>

@@ -6,8 +6,17 @@ import store from "../images/Store.png"
 import help from "../images/Help sign.png"
 import logout from "../images/Logout.png"
 import { Store } from '@mui/icons-material'
-export default function Sidebar({handleslideclose,handleaccount}) {
-
+import { useNavigate } from 'react-router-dom'
+export default function Sidebar({handleslideclose,handleaccount,setaccount}) {
+let nevigate=useNavigate()
+let handleclick=()=>{
+nevigate("/home/myAccount")
+handleaccount()
+setaccount(true)
+}
+let handlelogout=()=>{
+  nevigate("/")
+  }
   return (
 <>
 <div className="w-[80%] flex   items-center flex-col h-[100%] max-w-[430px] bg-white absolute z-50 ">
@@ -24,7 +33,7 @@ export default function Sidebar({handleslideclose,handleaccount}) {
 </div>
 </div>
 <div className='flex justify-start flex-col w-[90%] '>
-<div onClick={handleaccount} className='flex cursor-pointer justify-start items-center mt-5  border-b border-[#DAEAE8] pb-5 w-[100%]'>
+<div onClick={handleclick}  className='flex cursor-pointer justify-start items-center mt-5  border-b border-[#DAEAE8] pb-5 w-[100%]'>
 <img className='w-[25px]' src={user}/>
 <p className='Satoshi-bold text-[14px] ml-2'>My Account</p>
 </div>
@@ -40,7 +49,7 @@ export default function Sidebar({handleslideclose,handleaccount}) {
 <img className='w-[25px]' src={help}/>
 <p className='Satoshi-bold text-[14px] ml-2'>Help Center</p>
 </div>
-<div className='flex justify-start cursor-pointer items-center mt-5   pb-5 w-[100%]'>
+<div onClick={handlelogout} className='flex justify-start cursor-pointer items-center mt-5   pb-5 w-[100%]'>
 <img className='w-[25px]' src={logout}/>
 <p className='Satoshi-bold text-[14px] ml-2 text-[red]'>Sign Out</p>
 </div>

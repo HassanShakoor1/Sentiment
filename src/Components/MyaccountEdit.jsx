@@ -46,10 +46,7 @@ export default function MyaccountEdit() {
    <label className='mb-2'>State:</label>
    <input type='text' className='w-[100%] outline-none border border-[#C9C9C9]  h-[35px] rounded-[5px] pl-3 pr-3'/>
    </div>
-   <div className='flex justify-start flex-col mt-3'>
-   <label className='mb-2'>Date of birth:</label>
-   <input type='text' className='w-[100%] outline-none border border-[#C9C9C9]  h-[35px] rounded-[5px] pl-3 pr-3'/>
-   </div>
+ 
    <div>
     <div className='text-[16px] font-bold Satoshi-bold mt-8'>EMAIL NOTIFICATION</div>
     <div className='flex flex-col mt-3'>

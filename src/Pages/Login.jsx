@@ -36,8 +36,14 @@ export default function Login() {
  <Link to="/forgot" className='text-[#142C73] font-[600] text-[16px] Satoshi-bold '>Forgot password?</Link>
  </p>
    <button onClick={handleNavigate} className='bg-[#062A27] rounded-[30px] h-[45px] mt-3 w-[90%] font-[600] text-[16px] cursor-pointer text-white Satoshi-bold'>Log In</button>
+   <p className='w-[90%] cursor-pointer flex bg-[#062A27] Satoshi-bold text-white justify-between items-center outline-none border border-[#C9C9C9] mt-5 h-[45px] rounded-[30px] pl-1'>
+   <img width="35" height="35" src="https://img.icons8.com/color/96/google-logo.png" alt="google-logo"/>
+   <div>Login with google</div>
+   <p className='w-[10%]'></p>
+   </p>
    <p className='mt-3  text-[16px] mb-5'>Don’t have an account?<Link to="/" className='font-[600] text-[15px] ml-1 text-black underline Satoshi-bold'>Register here</Link></p>
    </div>
+  
    <br></br>
    </div>
    </>

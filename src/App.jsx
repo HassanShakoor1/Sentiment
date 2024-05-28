@@ -21,7 +21,11 @@ function App() {
               <Route path="/login" element={<Login />} />
               <Route path="/forgot" element={<Forgotpassword />} />
               <Route path="/newpassword" element={<CreatenewPassword />} />
-              <Route path="/home" element={<Home />} />
+              <Route path="/home">
+              <Route path="" element={<Home />} />
+              <Route path="myAccount" element={<Home />} />
+              </Route>
+             
               <Route path="/editprofile" element={<Editprofile />} />
               <Route path="/viewprofile" element={<ViewProfile />} />
             </Routes>
