@@ -58,12 +58,9 @@ export default function ViewMedia({userViewProfile,imageData,videoData,audioData
       // Add more objects as needed
     ];
     const [anchorEl, setAnchorEl] = React.useState(null);
-    const [deletid, setDeletid] = useState(null);
-
     const open = Boolean(anchorEl);
-    const handleClick = (event,id) => {
+    const handleClick = (event) => {
       setAnchorEl(event.currentTarget);
-      setDeletid(id)
     };
     const handleClose = () => {
       setAnchorEl(null);
@@ -125,16 +122,7 @@ let handleAddComent = (comment) => {
       function handleOnEnter (text) {
     
       }
-    const handleDeletecommnet = async () => {
-  try {
-    await remove(ref(db, `/Profile/${id}/imageMedia/${deletid}`))
-  alert("Profile deleted successfully");
-    nevigate("/home")
-  } catch (error) {
-    console.error("Error deleting profile:", error);
- alert("Error deleting profile");
-  }
-};
+    
   return (
     <>
     <div className='w-[100%] rounded-[20px]  bg-white flex  mt-2 items-center flex-col'>
@@ -269,7 +257,7 @@ timeout={{ appear: 500, enter: 500, exit: 500 }}
             <GoDotFill  className='text-[#5F6161] ml-2'  />
             <p className='text-[#5F6161] ml-2'>{item.date}</p>
           </div>
-          <FiMoreVertical onClick={(event) => handleClick(event, signleimage?.id)} className='text-[#5F6161] text-[20px] font-bold' />
+          <FiMoreVertical onClick={handleClick} className='text-[#5F6161] text-[20px] font-bold' />
         </div>
       
         <div className='w-[100%] flex items-center'>
@@ -319,7 +307,7 @@ transformOrigin={{
 }}
 getContentAnchorEl={null} // Prevents default anchor behavior
 >
-<MenuItem onClick={handleDeletecommnet} className='flex items-center'><img className='w-[20px] mr-3' src={delet}/><p className='text-[red]'>Delete Comment</p></MenuItem>
+<MenuItem onClick={handleClose} className='flex items-center'><img className='w-[20px] mr-3' src={delet}/><p className='text-[red]'>Delete Comment</p></MenuItem>
 
 </Menu>
 
