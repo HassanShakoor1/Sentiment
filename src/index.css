@@ -12,7 +12,7 @@ input:-webkit-autofill:active{
     display: none;
 }
 body{
-    font-family: 'Inter';
+  font-family: 'Satoshi';
 }
 input[type=number]::-webkit-inner-spin-button, 
 input[type=number]::-webkit-outer-spin-button { 

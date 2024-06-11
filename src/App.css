@@ -9,6 +9,10 @@
 .Satoshi-bold{
   font-family: 'Satoshi-bold';
 }
+.Satoshi{
+  font-family: 'Satoshi';
+}
+
 .orelega-one-regular {
   font-family: "Orelega One";
   font-weight: 500;
@@ -70,4 +74,7 @@ background-color: #f0f0f0;
   justify-content: center;
   align-items: center;
   padding: 7px;
+}
+body {
+  font-family: 'Satoshi', sans-serif;
 }

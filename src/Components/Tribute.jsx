@@ -13,7 +13,7 @@ import back from "../images/Frame 1171277120.png"
 import tick from "../images/Check circle.png"
 import cross from "../images/cross.png"
 import { FileUploader } from "react-drag-drop-files";
-export default function ViewTribute() {
+export default function Tribute() {
     let [Tribute,setTributes]=useState()
     let handleopen=()=>{
         setTributes(true)
@@ -76,55 +76,7 @@ export default function ViewTribute() {
 
   return (
    <>
-   <div className='flex justify-center items-center flex-col w-[100%] mt-5'>
-   <button onClick={handleopen}  className='bg-[#062A27] rounded-[30px] flex border border-[#B08655] justify-center items-center h-[45px] mt-3 w-[90%] font-[500] text-[16px] cursor-pointer text-white'><FaPlus className='mr-2'/>Post a Tribute</button>
-   <div className='flex items-center flex-col w-[90%] mt-5'>
-   {data.map((item) => (
-       <div key={item.id} className='flex items-center flex-col w-[100%] mb-5'>
-           <div className='flex items-center w-[100%]'>
-               <img className='w-[40px] h-[40px] object-cover rounded-[50%]' src={item.userImage} alt={item.userName} />
-               <p className='text-[16px] font-bold Satoshi-bold ml-3 text-[#062A27]'>{item.userName}</p>
-               <GoDotFill className='text-[#5F6161] ml-2' />
-               <p className='text-[#5F6161] ml-2'>{item.time}</p>
-           </div>
-           <p className='text-[#5F6161] mt-2'>{item.description}</p>
-           <img className='w-[100%] h-[330px] object-cover rounded-[8px] mt-2' src={item.postImage} alt="Post" />
-           <div className='flex items-center w-[100%] mt-2'>
-               <div className='border flex justify-center items-center border-[#E5D6C5] bg-white w-[30px] h-[30px] rounded-[50%]'>
-                   <GoHeart className='text-[#062A27] text-[16px]' />
-               </div>
-               <p className='text-[14px] text-[#062A27] font-bold Satoshi-bold ml-2'>{item.likes.toString().padStart(2, '0')}</p>
-               <p className='text-[14px] text-[#5F6161] ml-1'>Likes</p>
-               <div className='border ml-3 flex justify-center items-center border-[#E5D6C5] bg-white w-[30px] h-[30px] rounded-[50%]'>
-                   <img className='w-[16px]' src={chat} alt="Chat" />
-               </div>
-               <p className='text-[14px] text-[#062A27] font-bold Satoshi-bold ml-2'>{item.comments.length.toString().padStart(2, '0')}</p>
-               <p className='text-[14px] text-[#5F6161] ml-1'>Comments</p>
-           </div>
-           <textarea 
-               type="text" 
-               placeholder='Write your thought here...' 
-               className='mt-3 w-[100%] outline-none border border-[#DCE5E5] min-h-[70px] h-[35px] text-[14px] rounded-[5px] pl-3 pt-2 pr-3' 
-           />
-           <button className='rounded-[30px] flex border border-[#062A27] justify-center items-center h-[45px] mt-3 w-[90%] font-[1000] text-[18px] cursor-pointer text-[#062A27]'>
-               <img src={send} className='mr-2 w-[25px]' alt="Send" />
-               Submit
-           </button>
-           {item.comments.map((comment, index) => (
-               <div key={index} className='flex items-center justify-center flex-col bg-[#EFF7F7] rounded-[5px] mt-5 w-[100%]'>
-                   <div className='flex items-center pl-3 pt-3 w-[100%]'>
-                       <img className='w-[40px] h-[40px] object-cover rounded-[50%]' src={comment.commentUserImage} alt={comment.commentUserName} />
-                       <p className='text-[16px] font-bold ml-3 text-[#062A27]'>{comment.commentUserName}</p>
-                       <GoDotFill className='text-[#5F6161] ml-2' />
-                       <p className='text-[#5F6161] ml-2'>{comment.commentTime}</p>
-                   </div>
-                   <p className='pl-3 pb-3 pt-2 text-[15px] text-[#5F6161]'>{comment.commentText}</p>
-               </div>
-           ))}
-       </div>
-   ))}
-</div>
-   </div>
+  
    <Modal
    open={Tribute}
    onClose={handleclose}

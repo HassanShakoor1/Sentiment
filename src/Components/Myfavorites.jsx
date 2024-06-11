@@ -1,7 +1,8 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import img from "../images/Ellipse 2726 (1).png"
 import img1 from "../images/Ellipse 2726.png"
 import edit from "../images/Combined-Shape.png"
+import profile1 from "../images/Group 661 (2).png"
 import eye from "../images/Eye.png"
 import { RiShareForwardLine } from "react-icons/ri";
 import { GoHeartFill } from 'react-icons/go'
@@ -12,28 +13,27 @@ import cross from "../images/cross.png"
 import { useNavigate } from 'react-router-dom'
 import CloseIcon from '@mui/icons-material/Close';
 import Share from './Share'
+import { equalTo, onValue, orderByChild, query, ref, update } from 'firebase/database'
+import { db } from '../Firebase/firebaseConfig'
+import { FadeLoader } from 'react-spinners'
 
-export default function Myfavorites() {
+export default function Myfavorites({toast}) {
     const nevigate = useNavigate();
-    const handleNavigateview = () => {
-        nevigate("/viewprofile");
+    const handleNavigateview = (id) => {
+        nevigate(`/viewprofile/${id}`);
     };
     let [modal,setModal]=useState(false)
+    let [fvrtid,setFvrtid]=useState(false)
 
-    let handleopen=()=>{
+    let handleopen=(id)=>{
         setModal(true)
+        setFvrtid(id)
     }
     let handleclose=()=>{
         setModal(false)
     }
     const data = [
-        {
-            name: 'Jay Rome',
-            relationship: 'Brother',
-            createdIn: '27 Mar 2024',
-            medallionStatus: 'Unverified Medallion',
-            imgSrc: img1, // Assuming you have image paths
-          },
+       
         // Add more data objects as needed
       ];
       let [isModalOpen,setisModalOpen] =useState(false)
@@ -43,43 +43,85 @@ export default function Myfavorites() {
      let handleCloseshare =()=>{
         setisModalOpen(false)
      }
+     let [userprofile,setUserprofile]=useState("")
+     let [loading,setloading]=useState(false)
+
+     let currentUser =localStorage.getItem("userId")
+     useEffect(() => {
+       setloading(true)
+       const starCountRef = query(
+         ref(db, "/Profile"),
+         orderByChild("userId"),
+         equalTo(currentUser)
+       );
+      
+       onValue(starCountRef, async (snapshot) => {
+         const data = await snapshot.val();
+         if (data) {
+          setUserprofile(Object.values(data));
+        } else {
+          setUserprofile([]); 
+        }
+         setloading(false)
+       });
+     }, []); 
+     const favoriteProfiles = Array.isArray(userprofile) ? userprofile.filter(profile => profile.favoriteProfile === true) : [];
+
+     const updateFavoriteStatus = () => {
+      const updates = {};
+      updates[`/Profile/${fvrtid}/favoriteProfile`] = false;
+      return update(ref(db), updates).then (()=>{
+        handleclose();
+        toast.success("Medallion successfuly removed!")
+      }
+    )};
+
   return (
    <>
+   {loading ? (
+      
+    <div className=" justify-center mt-10 items-center ">    
+  <FadeLoader color="#062A27" />
+    </div>
+  ) : (
+    <>
    <div className='w-[90%] justify-start items-center flex-col'>
    <p className='text-[15px] text-[#062A27] Satoshi-bold mt-3'>MY FAVORITES</p>
    </div>
-   {!data.length =="0" &&
+   {!favoriteProfiles?.length =="0" &&
    <div className='flex justify-center items-center rounded-[10px] border border-[#f0f0f0] shadow-md mt-5 flex-col w-[90%]'>
-   {data.map((item, index) => (
-     <div key={index} className='flex w-[90%] rounded-[50%] mt-5'>
-       <img className='w-[80px] h-[80px] rounded-[50%]' src={item.imgSrc} alt={item.name} />
+   {favoriteProfiles?.map((item, index) => (
+    <div key={index} className='flex w-[90%] flex-col' >
+     <div key={index} className='flex w-[100%]  rounded-[50%] mt-5'>
+       <img className='w-[80px] h-[80px] rounded-[50%]' src={item.userProfile?item.userProfile:profile1}  />
        <div className='flex flex-col ml-3 w-[60%]'>
-         <p className='font-bold text-[16px] Satoshi-bold'>{item.name}</p>
+         <p className='font-bold text-[16px] Satoshi-bold'>{item?.firstName} {item?.lastName}</p>
          <div className='flex items-center'>
            <p>Relationship:</p>
            <p className='text-[#5F6161] text-[12px] ml-1 mt-1'>{item.relationship}</p>
          </div>
          <div className='flex items-center'>
            <p>Created in:</p>
-           <p className='text-[#5F6161] text-[12px] ml-1 mt-1'>{item.createdIn}</p>
+           <p className='text-[#5F6161] text-[12px] ml-1 mt-1'>{item.createdDate}</p>
          </div>
-         <p className='font-bold text-[16px] text-red-500'>{item.medallionStatus}</p>
+    <p className={`font-bold text-[16px] flex items-center ${item.status === 'Active' ? 'text-[#3F9A55]' : 'text-red-500'}`}><p className='text-[black] font-[400] text-[15px] mr-2'>Profile type:</p> {item.status}</p>
        </div>
-       <div onClick={handleopen} className='border flex justify-center items-center border-[#E5D6C5] bg-white w-[30px] h-[30px] rounded-[50%]'>
+       <div onClick={()=> handleopen(item.id)} className='border flex justify-center items-center border-[#E5D6C5] bg-white w-[30px] h-[30px] rounded-[50%]'>
          <GoHeartFill className='text-[#062A27] text-[20px]' />
        </div>
      </div>
+       <div className='w-[100%] flex items-center justify-between mb-5 mt-5'>
+       <button onClick={()=> handleNavigateview(item?.id)} className='border border-[#062A27] rounded-[30px] w-[47%] h-[40px] flex justify-center items-center Satoshi-bold'>
+         <img  className='w-[20px] h-[20px] mr-2' src={eye} alt="View" />View
+       </button>
+       <button onClick={handleopenshare} className='bg-[#062A27] text-[white] rounded-[30px] w-[47%] h-[40px] flex justify-center items-center Satoshi-bold'>
+         <RiShareForwardLine className='w-[30px] h-[20px] mr-2' />Share
+       </button>
+     </div>
+         </div>
    ))}
-   <div className='w-[90%] flex items-center justify-between mb-5 mt-5'>
-     <button onClick={handleNavigateview} className='border border-[#062A27] rounded-[30px] w-[47%] h-[40px] flex justify-center items-center Satoshi-bold'>
-       <img  className='w-[20px] h-[20px] mr-2' src={eye} alt="View" />View
-     </button>
-     <button onClick={handleopenshare} className='bg-[#062A27] text-[white] rounded-[30px] w-[47%] h-[40px] flex justify-center items-center Satoshi-bold'>
-       <RiShareForwardLine className='w-[30px] h-[20px] mr-2' />Share
-     </button>
-   </div>
  </div>}
- {data.length=="0" &&
+ {favoriteProfiles?.length=="0" &&
  <div className='flex justify-center items-center flex-col w-[100%] '>
 <div className='flex justify-center border border-[#DFE1E1] rounded-[20px] mt-5 items-center flex-col h-[250px] w-[90%]'>
 <img className='w-[70px]' src={emtpy}/>
@@ -88,6 +130,8 @@ export default function Myfavorites() {
 </div>
 </div>
 }
+</>
+  )}
 <Modal
 open={modal}
 onClose={handleclose}
@@ -132,7 +176,7 @@ aria-describedby="add-link-modal-description"
      <button onClick={handleclose} className='border border-[#062A27] rounded-[30px] w-[140px] h-[40px] flex justify-center items-center Satoshi-bold'>
       No
      </button>
-     <button className='bg-[#062A27] text-[white] rounded-[30px] w-[140px] h-[40px] flex justify-center items-center Satoshi-bold'>
+     <button onClick={updateFavoriteStatus} className='bg-[#062A27] text-[white] rounded-[30px] w-[140px] h-[40px] flex justify-center items-center Satoshi-bold'>
       Yes
      </button>
    </div>

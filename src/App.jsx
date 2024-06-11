@@ -1,6 +1,6 @@
 
 import './App.css'
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import Signup from './Pages/Signup';
 import Login from './Pages/Login';
 import Forgotpassword from './Pages/Forgotpassword';
@@ -9,7 +9,10 @@ import Home from './Pages/Home';
 import Editprofile from './Components/Editprofile';
 import ViewProfile from './Components/ViewProfile';
 function App() {
-
+  const RequireAuth = ({ children }) => {
+    const currentUser = localStorage.getItem("userId");
+    return currentUser?.length>0 && currentUser !=undefined  ? children : <Navigate to="/login" />;
+  };
 
   return (
     <>
@@ -22,12 +25,12 @@ function App() {
               <Route path="/forgot" element={<Forgotpassword />} />
               <Route path="/newpassword" element={<CreatenewPassword />} />
               <Route path="/home">
-              <Route path="" element={<Home />} />
-              <Route path="myAccount" element={<Home />} />
+              <Route path="" element={<RequireAuth><Home /></RequireAuth>} />
+              <Route path="myAccount" element={<RequireAuth><Home /></RequireAuth>} />
               </Route>
              
-              <Route path="/editprofile" element={<Editprofile />} />
-              <Route path="/viewprofile" element={<ViewProfile />} />
+              <Route path="/editprofile/:id" element={<RequireAuth><Editprofile /></RequireAuth>} />
+              <Route path="/viewprofile/:id" element={<ViewProfile />} />
             </Routes>
           </div>
         </div>

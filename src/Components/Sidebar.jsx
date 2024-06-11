@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState } from 'react'
 import cross from "../images/cross.png"
 import user from "../images/user (1).png"
 import update from "../images/New massage dot.png"
@@ -7,6 +7,8 @@ import help from "../images/Help sign.png"
 import logout from "../images/Logout.png"
 import { Store } from '@mui/icons-material'
 import { useNavigate } from 'react-router-dom'
+import { Box, Modal } from '@mui/material'
+import { IoClose } from 'react-icons/io5'
 export default function Sidebar({handleslideclose,handleaccount,setaccount}) {
 let nevigate=useNavigate()
 let handleclick=()=>{
@@ -15,7 +17,15 @@ handleaccount()
 setaccount(true)
 }
 let handlelogout=()=>{
+  localStorage.removeItem("userId")
+  localStorage.removeItem("profile")
+  localStorage.removeItem("User")
+  localStorage.removeItem("user")
   nevigate("/")
+  }
+  let [isModalOpen,setIsModalOpen]=useState(false)
+  let handlemodal = ()=>{
+    setIsModalOpen(!isModalOpen)
   }
   return (
 <>
@@ -49,13 +59,64 @@ let handlelogout=()=>{
 <img className='w-[25px]' src={help}/>
 <p className='Satoshi-bold text-[14px] ml-2'>Help Center</p>
 </div>
-<div onClick={handlelogout} className='flex justify-start cursor-pointer items-center mt-5   pb-5 w-[100%]'>
+<div onClick={handlemodal} className='flex justify-start cursor-pointer items-center mt-5   pb-5 w-[100%]'>
 <img className='w-[25px]' src={logout}/>
 <p className='Satoshi-bold text-[14px] ml-2 text-[red]'>Sign Out</p>
 </div>
 </div>
 </div>
   </div>
+  <Modal
+  open={isModalOpen}
+  onClose={handlemodal}
+  aria-labelledby="image-modal"
+  aria-describedby="image-modal-description"
+  >
+  <Box
+    sx={{
+      position: 'absolute',
+      top: '50%',
+      left: '50%',
+      transform: 'translate(-50%, -50%)',
+      width: 340,
+      bgcolor: 'white',
+      borderRadius: '10px',
+      background: '#f0f0f0',
+      outline: 'none',
+      boxShadow: 24,
+      maxHeight: "600px",
+      overflowY: "auto",
+      display: "flex",
+      justifyContent: "center",
+      alignItems: "center",
+      flexDirection: "column",
+      '&::-webkit-scrollbar': {
+        display: 'none',
+      },
+    }}
+  >
+  <div className='flex justify-end w-[90%] mt-3'>
+  <div onClick={handlemodal} className='flex justify-center items-center border border-[#E5D6C5] w-[25px] h-[25px] rounded-[50%]'>
+  <IoClose />
+  </div>
+  </div>
+  
+   <div className='flex justify-center items-center w-[90%] mt-2 flex-col'>
+
+      <p className='text-center mb-1'>Are you sure you want to logout this account?</p>
+    <div mt={2} className='flex w-[100%] justify-center mt-1'>
+      <button  className='border-[#062A27] border text-[#062A27] rounded-[30px] w-[35%] h-[35px] flex justify-center items-center ' onClick={handlemodal} >
+        No
+      </button>
+      <button  className='bg-[#062A27] text-[white] rounded-[30px] w-[35%] h-[35px] ml-3  flex justify-center items-center ' onClick={handlelogout}  >
+yes
+    </button>
+    </div>
+    </div>
+   
+    <br></br>
+  </Box>
+  </Modal>
 </>
   )
 }
