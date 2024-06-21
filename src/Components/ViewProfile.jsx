@@ -173,6 +173,8 @@ let [audioData,setAudioData]=useState([])
     toast.dismiss(); 
     toast.success(message);
   };
+
+  console.log(userViewProfile)
   return (
   <>
   <div className='flex  items-center flex-col w-[100%] min-h-[100vh] bg-[#f0f0f0] relative'>

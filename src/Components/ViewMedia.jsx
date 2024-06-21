@@ -26,6 +26,9 @@ import EmojiPicker from 'emoji-picker-react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { get, ref, update } from 'firebase/database'
 import { db } from '../Firebase/firebaseConfig'
+import user from "../images/Ellipse 2723 (1).png";
+import { Slide as slide, ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.min.css";
 
 export default function ViewMedia({userViewProfile,imageData,videoData,audioData}) {
    
@@ -95,9 +98,14 @@ export default function ViewMedia({userViewProfile,imageData,videoData,audioData
     nevigate("/")
   ]
 const {id}=useParams();
-
+const [ text, setText ] = useState('')
+const [name,setName]=useState("")
+const [tempCmt,setTempCmt]=useState({})
 let handleAddComent = (comment) => {
+
   // Fetch existing data
+  if(comment.comment && comment.name){
+    setTempCmt(comment)
   const profileRef = ref(db, `/Profile/${id}/imageMedia/${signleimage?.id}`);
   return get(profileRef)
       .then((snapshot) => {
@@ -107,25 +115,46 @@ let handleAddComent = (comment) => {
           updates[`/Profile/${id}/imageMedia/${signleimage?.id}`] = updatedData;
           return update(ref(db), updates)
               .then(() => {
-                  alert('Comment added successfully');
+                  toast.success('Comment added successfully');
+                  setText("")
+                  setName("")
               })
               .catch((error) => {
-                  alert('Failed to add comment: ' + error.message);
+                  toast.error('Failed to add comment: ' + error.message);
               });
       })
       .catch((error) => {
           alert('Failed to fetch existing data: ' + error.message);
       });
+   
+    }else{
+      toast.error("All fields are required")
+    }
 };
-  const [ text, setText ] = useState('')
+
   
       function handleOnEnter (text) {
     
       }
     
+
+ 
   return (
     <>
     <div className='w-[100%] rounded-[20px]  bg-white flex  mt-2 items-center flex-col'>
+    <ToastContainer
+          position="top-center"
+          autoClose={2000} // Auto close after 3 seconds
+          hideProgressBar={false}
+          newestOnTop={false}
+          closeOnClick
+          rtl={false}
+          pauseOnFocusLoss
+          draggable
+          pauseOnHover
+          transition={slide}
+          toastClassName="custom-toast"
+        />
     <div className='flex justify-evenly items-center w-[100%] border-b overflow-x-scroll'>
     <p className='p-3 whitespace-nowrap cursor-pointer text-[#5F6161] ' onClick={handleimage} style={image ? { borderBottom: "2px solid black",color:"#062A27" } : {}} >Image</p>
     <p className='p-3 cursor-pointer text-[#5F6161]' onClick={handlevideo} style={video ? { borderBottom: "2px solid black",color:"#062A27" } : {}}>Video</p>
@@ -139,7 +168,7 @@ let handleAddComent = (comment) => {
         <p className='text-[#5F6161] text-[13px] w-[70%] text-center mt-3'>No media has been added yet in collection</p>
         </div>}
        
-        <div className='flex justify-between items-center flex-wrap w-[90%] mt-3  '>
+        <div className='flex justify-between items-center flex-wrap w-[90%] mt-3'>
         {imageData.map((img, index) => (
           <div key={index} id={img.id} className='w-[47%] mt-5 h-[180px] relative rounded-[8px]'>
             <img className='w-[100%] h-[180px]  object-cover rounded-[8px]' src={img.mediaImage} alt={`Image ${index}`} />
@@ -248,11 +277,33 @@ timeout={{ appear: 500, enter: 500, exit: 500 }}
 </div>}
 
 <div className='flex  items-center flex-col sm:h-[180px] h-[350px] overflow-y-scroll w-[90%] mt-5 '>
+
+
+{ tempCmt.comment && tempCmt.name &&
+        <div   className='w-[100%] flex flex-col items-center'>
+        <div  className='flex justify-between items-center w-[100%]'>
+          <div className='flex items-center'>
+            <img className='w-[40px] h-[40px] object-cover rounded-[50%]' src={user} alt={tempCmt.name} />
+            <p className='text-[16px] font-bold Satoshi-bold ml-3 text-[#062A27]'>{tempCmt.name}</p>
+            <GoDotFill  className='text-[#5F6161] ml-2'  />
+            <p className='text-[#5F6161] ml-2'>{tempCmt.date}</p>
+          </div>
+          <FiMoreVertical onClick={handleClick} className='text-[#5F6161] text-[20px] font-bold' />
+        </div>
+      
+        <div className='w-[100%] flex items-center'>
+        <p className='ml-[50px] text-[#5F6161] text-[14px] '>{tempCmt.comment}</p>
+        </div>
+        </div>
+  }
+
+
+
       {comments.map((item, index) => (
         <div  key={index} className='w-[100%] flex flex-col items-center'>
         <div key={index} className='flex justify-between items-center w-[100%]'>
           <div className='flex items-center'>
-            <img className='w-[40px] h-[40px] object-cover rounded-[50%]' src={item.imageName} alt={item.name} />
+            <img className='w-[40px] h-[40px] object-cover rounded-[50%]' src={user} alt={item.name} />
             <p className='text-[16px] font-bold Satoshi-bold ml-3 text-[#062A27]'>{item.name}</p>
             <GoDotFill  className='text-[#5F6161] ml-2'  />
             <p className='text-[#5F6161] ml-2'>{item.date}</p>
@@ -270,12 +321,14 @@ timeout={{ appear: 500, enter: 500, exit: 500 }}
     </div>
     
 </div>
-    {!userId ? (
-        <div className='flex justify-center w-[100%] h-[50px] absolute bg-[white] bottom-0 items-center'>
-          <div className=" font-bold text-[16px] flex">Please sign up to comment <p onClick={handlesignup} className='underline cursor-pointer ml-2'>Sign Up</p></div>
+
+
+        <div className="w-[90%] flex  items-center  mt-[42px]">
+        
+<input type="text" placeholder="Name" className="w-[78%] h-[44px] text-[14px] outline-none border rounded-full ml-[10px] pl-[10px]" value={name} onChange={(e)=>setName(e.target.value)}/>
+
         </div>
-      ) : ( 
-<div className='flex justify-between w-[90%] h-[50px] absolute bg-[white] bottom-0 items-center'>
+<div className='flex justify-between w-[90%] h-[50px] absolute bg-[white] bottom-0 items-center '>
 <InputEmoji
           value={text}
           onChange={setText}
@@ -284,10 +337,11 @@ timeout={{ appear: 500, enter: 500, exit: 500 }}
   placeholder='Add a comment....' 
   className='w-[80%] text-[14px] outline-none border-none' 
         />
-<img onClick={()=>handleAddComent({userId:userId ,comment:text, timeStamp: new Date().toISOString()})} className='w-[30px]' src={send} alt='send' />
+<img onClick={()=>handleAddComent({userId:userId, name,comment:text, timeStamp: new Date().toISOString()})} className='w-[30px] cursor-pointer' src={send} alt='send' />
 </div>
-    )}
-  </div>
+</div>
+  
+  
 
 </Slide>
 <Menu
