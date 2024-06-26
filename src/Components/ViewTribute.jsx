@@ -7,8 +7,18 @@ import { GoDotFill, GoHeart } from "react-icons/go";
 import { RiShareForwardLine } from "react-icons/ri";
 import chat from "../images/Chat (1).png";
 import send from "../images/Send message.png";
+import delet from "../images/Delete Bin 4.png";
 import user from "../images/Ellipse 2723 (1).png";
-import { Modal, Box, IconButton, colors, Radio } from "@mui/material";
+import {
+  Modal,
+  Box,
+  IconButton,
+  colors,
+  Radio,
+  Menu,
+  Fade,
+  MenuItem,
+} from "@mui/material";
 import back from "../images/Frame 1171277120.png";
 import tick from "../images/Check circle.png";
 import cross from "../images/cross.png";
@@ -22,13 +32,15 @@ import {
   query,
   ref,
   update,
-  set
+  set,
+  get,
 } from "firebase/database";
 import { getDownloadURL, ref as sRef, uploadBytes } from "firebase/storage";
 import { useParams } from "react-router-dom";
 import { Slide, ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.min.css";
-export default function ViewTribute() {
+import { FiMoreVertical } from "react-icons/fi";
+export default function ViewTribute({ userViewProfile }) {
   let [Tribute, setTributes] = useState();
   let handleopen = () => {
     setTributes(true);
@@ -139,6 +151,7 @@ export default function ViewTribute() {
         title: "",
         description: "",
       });
+      handleclose();
     } else {
       toast.error("All fields are required");
     }
@@ -163,6 +176,11 @@ export default function ViewTribute() {
       }
 
       MediaKeyStatusMap;
+      // setmylist(Object.values(data));
+
+      // setfiltered(Object.values(data));
+
+      // updateStarCount(postElement, data);
     });
   };
 
@@ -171,7 +189,7 @@ export default function ViewTribute() {
     const starCountRef = query(
       ref(db, "/User"),
       orderByChild("id"),
-      equalTo(admin)
+      equalTo(userViewProfile?.userId)
     );
     onValue(starCountRef, async (snapshot) => {
       const data = await snapshot.val();
@@ -201,22 +219,20 @@ export default function ViewTribute() {
     ) {
       if (post?.comments && typeof post?.comments === "object") {
         set(ref(db, `tributes/${post?.id}/comments/`), [
-          
           {
             ...commentData,
             timeStamp: new Date().toISOString(),
             id: Date.now(),
           },
-          ...post?.comments
-        ]).then(()=>{
+          ...post?.comments,
+        ]).then(() => {
           toast.success("Comment submited successfuly");
           setCommentData({
             firstName: "",
             lastName: "",
             comment: "",
-        })
+          });
         });
-    
       } else {
         set(ref(db, `tributes/${post?.id}/comments/`), [
           {
@@ -224,22 +240,27 @@ export default function ViewTribute() {
             timeStamp: new Date().toISOString(),
             id: Date.now(),
           },
-        ]).then(()=>{
+        ]).then(() => {
           toast.success("Comment submited successfuly");
           setCommentData({
             firstName: "",
             lastName: "",
             comment: "",
-        })
+          });
         });
-    
       }
     }
   };
 
-  const updateLikes=(post)=>{
-    update(ref(db, `tributes/${post?.id}/`), { likes:post?.likes+1});
-  }
+  const updateLikes = (post) => {
+    if (post && post.id != null) {
+      const currentLikes = parseInt(post.likes, 10) || 0; // Ensure likes is treated as a number
+      const newLikesCount = currentLikes + 1;
+      update(ref(db, `tributes/${post.id}/`), { likes: newLikesCount });
+    } else {
+      console.error("Invalid post data");
+    }
+  };
 
   useEffect(() => {
     getAdmin();
@@ -265,7 +286,53 @@ export default function ViewTribute() {
       return Math.round(elapsed / msPerDay) + " days ago";
     }
   }
-  console.log(selectedPost);
+
+  const [anchorEl, setAnchorEl] = useState(null);
+  const [cmntTimeStamp, setCmntTimeStamp] = useState("");
+  const [commnetId, setCommnetId] = useState("");
+
+  const handleClick = (event, item, allitem) => {
+    console.log(item);
+    setAnchorEl(event.currentTarget);
+    setCmntTimeStamp(item);
+    setCommnetId(allitem?.id);
+  };
+  console.log(commnetId);
+  const handleClose = () => {
+    setAnchorEl(null);
+  };
+  const handleDeleteCmnt = (timeStamp) => {
+    const postRef = ref(db, `tributes/${commnetId}/comments`);
+
+    get(postRef)
+      .then((snapshot) => {
+        const posts = snapshot.val();
+
+        if (posts) {
+          let remainingComnt = posts.filter((elm) => {
+            return elm.timeStamp !== timeStamp;
+          });
+          console.log(remainingComnt);
+          set(ref(db, `tributes/${commnetId}/comments`), remainingComnt).then(
+            () => {
+              toast.success("Comment deleted successfully");
+            }
+          );
+        }
+      })
+      .catch((error) => {
+        console.error("Error deleting comment:", error);
+        toast.error("Failed to delete comment");
+      });
+  };
+  function truncateText(text, maxLength) {
+    if (text?.length <= maxLength) {
+      return text;
+    } else {
+      return text?.slice(0, maxLength) + "...";
+    }
+  }
+
   return (
     <>
       <div className="flex justify-center items-center flex-col w-[100%] mt-5">
@@ -292,7 +359,7 @@ export default function ViewTribute() {
           </button>
         )}
         <div className="flex items-center flex-col w-[90%] mt-5">
-          {tributes?.map((item,i) => (
+          {tributes?.map((item, i) => (
             <div
               key={item.id}
               className="flex items-center flex-col w-[100%] mb-5"
@@ -312,14 +379,20 @@ export default function ViewTribute() {
                   {timeDifference(item?.timeStamp)}
                 </p>
               </div>
-              <p className="text-[#5F6161] mt-2">{item?.description}</p>
+              <div className="w-[100%] justify-start">
+                <p className="text-[#5F6161] font-[600] mt-2">{item?.title}</p>
+                <p className="text-[#5F6161] mt-2">{item?.description}</p>
+              </div>
               <img
                 className="w-[100%] h-[330px] object-cover rounded-[8px] mt-2"
                 src={item?.image}
                 alt="Post"
               />
               <div className="flex items-center w-[100%] mt-2">
-                <div className="border flex justify-center items-center border-[#E5D6C5] bg-white w-[30px] h-[30px] rounded-[50%] cursor-pointer" onClick={()=>updateLikes(item)}>
+                <div
+                  className="border flex justify-center items-center border-[#E5D6C5] bg-white w-[30px] h-[30px] rounded-[50%] cursor-pointer"
+                  onClick={() => updateLikes(item)}
+                >
                   <GoHeart className="text-[#062A27] text-[16px]" />
                 </div>
                 <p className="text-[14px] text-[#062A27] font-bold Satoshi-bold ml-2">
@@ -330,7 +403,9 @@ export default function ViewTribute() {
                   <img className="w-[16px]" src={chat} alt="Chat" />
                 </div>
                 <p className="text-[14px] text-[#062A27] font-bold Satoshi-bold ml-2">
-               {item?.comments && typeof item?.comments==="object" ? Object.values(item?.comments)?.length:"0"}
+                  {item?.comments && typeof item?.comments === "object"
+                    ? Object.values(item?.comments)?.length
+                    : "0"}
                 </p>
                 <p className="text-[14px] text-[#5F6161] ml-1">Comments</p>
               </div>
@@ -345,7 +420,9 @@ export default function ViewTribute() {
                       firstName: e.target.value,
                     })
                   }
-                  value={selectedPost===item?.id ? commentData?.firstName:""}
+                  value={
+                    selectedPost === item?.id ? commentData?.firstName : ""
+                  }
                 />
                 <input
                   type="text"
@@ -354,7 +431,7 @@ export default function ViewTribute() {
                   onChange={(e) =>
                     setCommentData({ ...commentData, lastName: e.target.value })
                   }
-                  value={selectedPost===item?.id ? commentData?.lastName:""}
+                  value={selectedPost === item?.id ? commentData?.lastName : ""}
                 />
               </div>
               <textarea
@@ -364,7 +441,7 @@ export default function ViewTribute() {
                 onChange={(e) =>
                   setCommentData({ ...commentData, comment: e.target.value })
                 }
-                value={selectedPost===item?.id ? commentData?.comment:""}
+                value={selectedPost === item?.id ? commentData?.comment : ""}
               />
               <button
                 className="rounded-[30px] flex border border-[#062A27] justify-center items-center h-[45px] mt-3 w-[90%] font-[1000] text-[18px] cursor-pointer text-[#062A27] opacity-[40%]"
@@ -377,63 +454,100 @@ export default function ViewTribute() {
                       ? "100%"
                       : "50%",
                 }}
-                onClick={()=>submitComment(item)}
+                onClick={() => submitComment(item)}
               >
                 <img src={send} className="mr-2 w-[25px]" alt="Send" />
                 Submit
               </button>
-{item?.comments && typeof item?.comments==="object" && 
-<>
-{seeMore && selectedPost===item?.id? 
-
-Object.values(item?.comments)?.map((singleComment,i)=>{
-return  <div className="flex items-center justify-center flex-col bg-[#EFF7F7] rounded-[5px] mt-5 w-[100%]">
-<div className="flex items-center pl-3 pt-3 w-[100%]">
-  <img
-    className="w-[40px] h-[40px] object-cover rounded-[50%]"
-    src={user}
-    alt=""
-  />
-  <p className="text-[16px] font-bold ml-3 text-[#062A27]">
-    {singleComment?.firstName} {singleComment?.lastName}
-    
-  </p>
-  <GoDotFill className="text-[#5F6161] ml-2" />
-  <p className="text-[#5F6161] ml-2"> {timeDifference(singleComment?.timeStamp)}</p>
-</div>
-<p className="pl-3 pb-3 pt-2 text-[15px] text-[#5F6161]">
-{singleComment?.comment}
-</p>
-</div>
-              })
-:
-              <div className="flex items-center justify-center flex-col bg-[#EFF7F7] rounded-[5px] mt-5 w-[100%]">
-                <div className="flex items-center pl-3 pt-3 w-[100%]">
-                  <img
-                    className="w-[40px] h-[40px] object-cover rounded-[50%]"
-                    src={user}
-                    alt=""
-                  />
-                  <p className="text-[16px] font-bold ml-3 text-[#062A27]">
-                    {Object.values(item?.comments)?.[0]?.firstName} {Object.values(item?.comments)?.[0]?.lastName}
-                    
-                  </p>
-                  <GoDotFill className="text-[#5F6161] ml-2" />
-                  <p className="text-[#5F6161] ml-2"> {timeDifference(Object.values(item?.comments)?.[0]?.timeStamp)}</p>
-                </div>
-                <p className="pl-3 pb-3 pt-2 text-[15px] text-[#5F6161]">
-               {Object.values(item?.comments)?.[0]?.comment}
-                </p>
-              </div>
- }
-              {Object.values(item?.comments)?.length>1 &&
-              <div className="w-[100%] flex justify-end items-center text-[#062A27] cursor-pointer" onClick={()=>setseeMore(!seeMore)}>
-                {seeMore && selectedPost===item?.id?"See Less":"See More"}
-
-              </div>
-}
-              </>
-}
+              {item?.comments && typeof item?.comments === "object" && (
+                <>
+                  {seeMore && selectedPost === item?.id ? (
+                    Object.values(item?.comments)?.map((singleComment, i) => {
+                      return (
+                        <div className="flex items-center justify-center flex-col bg-[#EFF7F7] rounded-[5px] mt-5 w-[100%]">
+                          <div className="flex items-center justify-around pt-3 w-[100%]">
+                            <img
+                              className="w-[40px] h-[40px] ml-2 object-cover rounded-[50%]"
+                              src={user}
+                              alt=""
+                            />
+                            <p className="text-[13px] w-[130px]   font-bold ml-3 text-[#062A27]">
+                              {truncateText(
+                                singleComment?.firstName +
+                                  " " +
+                                  singleComment?.lastName,
+                                20
+                              )}
+                            </p>
+                            <GoDotFill className="text-[#5F6161] ml-2" />
+                            <p className="text-[#5F6161]  text-[12px] ml-2">
+                              {" "}
+                              {timeDifference(singleComment?.timeStamp)}
+                            </p>
+                            <FiMoreVertical
+                              onClick={(e) =>
+                                handleClick(e, singleComment?.timeStamp, item)
+                              }
+                              className="text-[#5F6161] text-[20px] ml-5 font-bold"
+                            />
+                          </div>
+                          <p className="pl-3 pb-3 pt-2 text-[15px] w-[70%] text-[#5F6161]">
+                            {singleComment?.comment}
+                          </p>
+                        </div>
+                      );
+                    })
+                  ) : (
+                    <div className="flex items-center justify-center flex-col bg-[#EFF7F7] rounded-[5px] mt-5 w-[100%]">
+                      <div className="flex items-center justify-around  pt-3 w-[100%]">
+                        <img
+                          className="w-[40px] h-[40px] ml-2 object-cover rounded-[50%]"
+                          src={user}
+                          alt=""
+                        />
+                        <p className="text-[13px] font-bold w-[130px] ml-3 text-[#062A27]">
+                          {truncateText(
+                            Object.values(item?.comments)?.[0]?.firstName +
+                              " " +
+                              Object.values(item?.comments)?.[0]?.lastName,
+                            20
+                          )}
+                        </p>
+                        <GoDotFill className="text-[#5F6161]  ml-2" />
+                        <p className="text-[#5F6161] text-[12px] ml-2">
+                          {" "}
+                          {timeDifference(
+                            Object.values(item?.comments)?.[0]?.timeStamp
+                          )}
+                        </p>
+                        <FiMoreVertical
+                          onClick={(e) =>
+                            handleClick(
+                              e,
+                              Object.values(item?.comments)?.[0]?.timeStamp,
+                              item
+                            )
+                          }
+                          className="text-[#5F6161] text-[20px] ml-5 font-bold"
+                        />
+                      </div>
+                      <p className="pl-3 pb-3 pt-2 w-[70%] text-[15px] text-[#5F6161]">
+                        {Object.values(item?.comments)?.[0]?.comment}
+                      </p>
+                    </div>
+                  )}
+                  {Object.values(item?.comments)?.length > 1 && (
+                    <div
+                      className="w-[100%] flex justify-end items-center text-[#062A27] cursor-pointer"
+                      onClick={() => setseeMore(!seeMore)}
+                    >
+                      {seeMore && selectedPost === item?.id
+                        ? "See Less"
+                        : "See More"}
+                    </div>
+                  )}
+                </>
+              )}
             </div>
           ))}
         </div>
@@ -486,10 +600,11 @@ return  <div className="flex items-center justify-center flex-col bg-[#EFF7F7] r
             <div className="flex  items-center mt-5 w-[90%]">
               <img
                 className="w-[40px] h-[40px] object-cover rounded-[50%]"
-                src={img3}
+                src={userViewProfile?.userProfile}
               />
               <p className="text-[16px] font-bold Satoshi-bold ml-3 text-[#062A27]">
-                Mis Elza
+                {userViewProfile?.firstName}
+                {userViewProfile?.lastName}
               </p>
             </div>
             <div className="flex justify-start flex-col w-[90%] mt-5">
@@ -562,6 +677,34 @@ return  <div className="flex items-center justify-center flex-col bg-[#EFF7F7] r
           <br></br>
         </Box>
       </Modal>
+      <Menu
+        id="fade-menu"
+        anchorEl={anchorEl}
+        keepMounted
+        open={Boolean(anchorEl)}
+        onClose={handleClose}
+        TransitionComponent={Fade}
+        anchorOrigin={{
+          vertical: "bottom",
+          horizontal: "center",
+        }}
+        transformOrigin={{
+          vertical: "top",
+          horizontal: "right",
+        }}
+        getContentAnchorEl={null}
+      >
+        <MenuItem
+          onClick={() => {
+            handleDeleteCmnt(cmntTimeStamp);
+            handleClose();
+          }}
+          className="flex items-center"
+        >
+          <img className="w-[20px] mr-3" src={delet} alt="delete" />
+          <p className="text-[red]">Delete comment</p>
+        </MenuItem>
+      </Menu>
     </>
   );
 }

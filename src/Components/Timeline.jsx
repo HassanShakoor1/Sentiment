@@ -119,7 +119,7 @@ export default function Timeline({toast}) {
     };
     
     const dataArray = [
-      { id: 'custum', image: et, title: 'Custum' },
+      { id: 'custom', image: et, title: 'Custom' },
         { id: 'education', image: education, title: 'Education' },
         { id: 'family', image: family, title: 'Family' },
         { id: 'milestones', image: flag, title: 'Milestones' },
@@ -237,41 +237,79 @@ const handleEditcurentevent = (post) => {
 };
 
 const handleEditEvent = () => {
-  if(!edittimelineTitle){
-    toast.error("Date are required.")
+  if (!edittimelineTitle) {
+    toast.error("Title is required.");
     return;
   }
-  if(!edittimelineDate){
-    toast.error("Title are required.")
+  if (!edittimelineDate) {
+    toast.error("Date is required.");
     return;
   }
- 
+  if (!editTimelineimage) {
+    toast.error("Image is required.");
+    return;
+  }
   const designformatdate = (dateString) => {
     const date = new Date(dateString);
     const options = { day: '2-digit', month: 'short', year: 'numeric' };
     return date.toLocaleDateString('en-US', options);
   };
-  setBTnloader(true)
-  const postRef = ref(db, `Profile/${id}/timeline/${editTimlineId}`);
-  const formattedDate = designformatdate(edittimelineDate);
-  const updatedPost = {
-    id: editTimlineId,
-    timelineTitle: edittimelineTitle,
-    timelineDate: formattedDate,
-    timelineImage: editTimelineimage,
-  };
+  setBTnloader(true);
 
-  set(postRef, updatedPost)
+  // Convert base64 image to a Blob
+  const byteCharacters = atob(editTimelineimage.split(",")[1]);
+  const byteNumbers = new Array(byteCharacters.length);
+  for (let i = 0; i < byteCharacters.length; i++) {
+    byteNumbers[i] = byteCharacters.charCodeAt(i);
+  }
+  const byteArray = new Uint8Array(byteNumbers);
+  const blob = new Blob([byteArray], { type: 'image/png' });
+
+  // Generate a unique name for the image
+  let imageName = new Date().getTime() + '_edittimeline.png'; // Example name generation
+
+  // Reference to Firebase Storage
+  const storageRef = sRef(storage, `timelineImages/${imageName}`);
+
+  // Upload image to Firebase Storage
+  uploadBytes(storageRef, blob)
     .then(() => {
-      toast.success("Post updated successfully");
-      setEvents(prevPosts => prevPosts.map(post => post.id === editTimlineId ? updatedPost : post));
-      setEditModal(false);
-      setBTnloader(false)
+      // Get download URL of the uploaded image
+      getDownloadURL(storageRef)
+        .then(URL => {
+          // Format date for display
+          const formattedDate = designformatdate(edittimelineDate);
+
+          // Update the event data in Firebase Realtime Database
+          const postRef = ref(db, `Profile/${id}/timeline/${editTimlineId}`);
+          const updatedPost = {
+            id: editTimlineId,
+            timelineTitle: edittimelineTitle,
+            timelineDate: formattedDate,
+            timelineImage: URL, // Update with the download URL
+          };
+
+          // Update data in Firebase Realtime Database
+          set(postRef, updatedPost)
+            .then(() => {
+              toast.success("Event updated successfully");
+              setEvents(prevEvents => prevEvents.map(event => event.id === editTimlineId ? updatedPost : event));
+              setEditModal(false);
+              setBTnloader(false);
+            })
+            .catch(error => {
+              toast.error("Failed to update event: " + error.message);
+            });
+        })
+        .catch(error => {
+          toast.error("Failed to get download URL: " + error.message);
+        });
     })
     .catch(error => {
-      toast.error("Failed to update post: " + error.message);
+      toast.error("Failed to upload image: " + error.message);
     });
 };
+
 
 ///////////end edit timeline////////////
 

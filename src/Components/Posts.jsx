@@ -7,7 +7,7 @@ import { FiMoreVertical } from 'react-icons/fi';
 import profile1 from "../images/Group 661 (2).png"
 import { FaPlus } from 'react-icons/fa6';
 import { Box, Modal } from '@mui/material';
-import { onValue, push, ref, remove, set } from 'firebase/database';
+import { equalTo, onValue, orderByChild, push, query, ref, remove, set } from 'firebase/database';
 import { db } from '../Firebase/firebaseConfig';
 import media from "../images/Video playlist.png"
 import img5 from "../images/imgg (4).jpg";
@@ -122,11 +122,10 @@ setBTnloader(true)
     getdata();
   }, [currentUser]);
   const handleDeletePost = (postId) => {
-    const postRef = ref(db, `User/${currentUser}/allPosts/${postId}`);
+    const postRef = ref(db, `tributes/${postId}`);
     remove(postRef)
       .then(() => {
         toast.success("Post deleted successfully");
-        setAllPosts(prevPosts => prevPosts.filter(post => post.id !== postId));
       })
       .catch(error => {
         toast.error("Failed to delete post: " + error.message);
@@ -136,33 +135,40 @@ setBTnloader(true)
   const [editPostId, setEditPostId] = useState(null);
   const [editPostTitle, setEditPostTitle] = useState("");
   const [editPostDes, setEditPostDes] = useState("");
+  const [editTimeStamp, setEditTimeStamp] = useState("");
+  const [editTributeImage, setEditTributeImage] = useState("");
+  const [editTributeProfileId, setEditTributeProfileId] = useState("");
+
   const handleEditPost = (post) => {
+    console.log(post)
     setEditPostId(post.id);
-    setEditPostTitle(post.postTitle);
-    setEditPostDes(post.postDescription);
+    setEditPostTitle(post.title);
+    setEditPostDes(post.description);
+    setEditTimeStamp(post.timeStamp);
+    setEditTributeImage(post.image);
+    setEditTributeProfileId(post.profileId)
     setEditEvent(true);
+
     handleClose();
   };
 
   const handleUpdatePost = () => {
     setBTnloader(true)
-    const postRef = ref(db, `User/${currentUser}/allPosts/${editPostId}`);
+    const postRef = ref(db, `tributes/${editPostId}`);
     const updatedPost = {
       id: editPostId,
-      postTitle: editPostTitle,
-      postDescription: editPostDes,
-      userId: userdata?.id,
-      firstName: userdata?.firstName,
-      lastName: userdata?.lastName,
-      profile: userdata?.profileImage,
-      timeStamp: new Date().toISOString()
+      title: editPostTitle,
+      description: editPostDes,
+      userId:currentUser,
+      timeStamp: editTimeStamp,
+      image:editTributeImage,  
+      profileId:editTributeProfileId,
     };
   
     set(postRef, updatedPost)
       .then(() => {
         toast.success("Post updated successfully");
         setBTnloader(false)
-        setAllPosts(prevPosts => prevPosts.map(post => post.id === editPostId ? updatedPost : post));
         setEditEvent(false);
       })
       .catch(error => {
@@ -183,23 +189,42 @@ setBTnloader(true)
     }
   }
   let truncatedName = truncateText(`${userdata?.firstName} ${userdata?.lastName}`, 19);
+  const [tributes, settributes] = useState([]);
+      const getAllChilds = async () => {
+    const starCountRef = query(
+      ref(db, "/tributes"),
+      orderByChild("userId"),
+      equalTo(currentUser)
+    );
+    onValue(starCountRef, async (snapshot) => {
+      const data = await snapshot.val();
+      if (data) {
+        settributes(Object.values(data));
+      } else {
+      }
+    });
+  };
+    useEffect(() => {
+    getAllChilds();
+  }, []);
+
   return (
     <>
-      <div className='w-[90%] justify-start items-center flex-col'>
-        <button onClick={handleEventModal} className='bg-[#062A27] rounded-[30px] flex border border-[#B08655] justify-center items-center h-[45px] mt-5 w-[100%] font-[500] text-[16px] cursor-pointer text-white Satoshi-bold'>
+  <div className='w-[90%] justify-start items-center flex-col'>
+           {/*<button onClick={handleEventModal} className='bg-[#062A27] rounded-[30px] flex border border-[#B08655] justify-center items-center h-[45px] mt-5 w-[100%] font-[500] text-[16px] cursor-pointer text-white Satoshi-bold'>
           <FaPlus className='mr-2' />Add New Post
-        </button>
+        </button>*/} 
         
         <p className='text-[15px] text-[#062A27] Satoshi-bold mt-3'>MY POSTS</p>
-        {getposts.length===0 && <div className='flex justify-center border border-[#DFE1E1] rounded-[20px] mt-5 items-center flex-col h-[250px] w-[100%]'>
+        {tributes.length===0 && <div className='flex justify-center border border-[#DFE1E1] rounded-[20px] mt-5 items-center flex-col h-[250px] w-[100%]'>
           <BsSignpost className='w-[50px] h-[50px] text-[#5F6161]' />
           <h1 className='font-bold text-[16px] mt-3'>No post found</h1>
           <p className='text-[#5F6161] text-[13px] w-[70%] text-center mt-3'>No post has been added yet in collection</p>
           </div>}
-          {getposts.length >= 1 &&
+          {tributes.length >= 1 &&
             <>
         <div className='flex items-center flex-col sm:h-[180px] h-[350px] overflow-y-scroll w-[100%]'>
-          {getposts?.map((item, index) => (
+          {tributes?.map((item, index) => (
             <div key={index} className='w-[100%] flex flex-col items-center mt-5'>
               <div className='flex justify-between items-center w-[100%]'>
                 <div className='flex items-center'>
@@ -212,11 +237,11 @@ setBTnloader(true)
               </div>
 
               <div className='w-[100%] flex items-center mb-2'>
-                <p className='ml-[50px] font-bold Satoshi-bold text-[14px] text-[#062A27]'>{item?.postTitle}</p>
+                <p className='ml-[50px] font-bold Satoshi-bold text-[14px] text-[#062A27]'>{item?.title}</p>
               </div>
 
               <div className='w-[100%] flex items-center'>
-                <p className='ml-[50px] text-[#5F6161] '>{item?.postDescription}</p>
+                <p className='ml-[50px] text-[#5F6161] '>{item?.description}</p>
               </div>
             </div>
           ))}
@@ -241,10 +266,10 @@ setBTnloader(true)
         }}
         getContentAnchorEl={null}
       >
-        <MenuItem onClick={() => handleViewPost(getposts.find(post => post.id === selectedPostId))} className='flex items-center'>
+        <MenuItem onClick={() => handleViewPost(tributes.find(post => post.id === selectedPostId))} className='flex items-center'>
           <img className='w-[20px] h-[19px] mr-3' src={eye} alt="view" />View
         </MenuItem>
-        <MenuItem onClick={() => handleEditPost(getposts.find(post => post.id === selectedPostId))} className='flex items-center'>
+        <MenuItem onClick={() => handleEditPost(tributes.find(post => post.id === selectedPostId))} className='flex items-center'>
           <img className='w-[17px] mr-4' src={editb} alt="edit" />Edit
         </MenuItem>
         <MenuItem onClick={() => { handleDeletePost(selectedPostId); handleClose(); }} className='flex items-center'>
@@ -445,13 +470,13 @@ aria-describedby="view-post-modal-description"
       <label className=''>Post Title:</label>
     </div>
     <div className='flex w-[90%] justify-start mt-2'>
-    <p className=' ml-[20px] font-bold Satoshi-bold text-[#062A27]'>{viewPostDetails?.postTitle}</p>
+    <p className=' ml-[20px] font-bold Satoshi-bold text-[#062A27]'>{viewPostDetails?.title}</p>
     </div>
     <div className='flex w-[90%]  text-[18px]   mt-5 justify-start items-center'>
       <label className=' '>Post Description:</label>
     </div>
     <div className='flex w-[90%] mt-2 justify-start '>
-    <p className='ml-[20px] text-[#5F6161]'>{viewPostDetails?.postDescription}</p>
+    <p className='ml-[20px] text-[#5F6161]'>{viewPostDetails?.description}</p>
     </div>
   </div>
   <br />
