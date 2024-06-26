@@ -163,11 +163,6 @@ export default function ViewTribute() {
       }
 
       MediaKeyStatusMap;
-      // setmylist(Object.values(data));
-
-      // setfiltered(Object.values(data));
-
-      // updateStarCount(postElement, data);
     });
   };
 
