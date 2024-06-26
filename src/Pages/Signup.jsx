@@ -229,7 +229,7 @@ export default function Signup() {
           <p className="mt-3 text-[16px] mb-5">
             Already have an account?{" "}
             <Link
-              to="/login"
+              to="/"
               className="font-[600] text-[15px] text-black underline Satoshi-bold"
             >
               Log In

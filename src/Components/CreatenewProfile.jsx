@@ -400,7 +400,7 @@ export default function CreatenewProfile({handleback,bio,toast}) {
   </select>
 </div>
 
-    <p className='text-[16px] font-bold Satoshi-bold mt-8'>Custum Link</p> 
+    <p className='text-[16px] font-bold Satoshi-bold mt-8'>Custom Link</p> 
     <div className='flex justify-start flex-col mt-3'>
   <label className='mb-2'>Link Title:</label>
   <input type='text' className='w-[100%] outline-none border border-[#C9C9C9]  h-[35px] rounded-[5px] pl-3 pr-3' value={linkTitle} onChange={(e) => setLinkTitle(e.target.value)}/>

@@ -16,7 +16,7 @@ import 'react-h5-audio-player/lib/styles.css';
 import { FiMoreVertical } from 'react-icons/fi';
 import { db, storage } from '../Firebase/firebaseConfig';
 import { getDownloadURL, uploadBytes,ref as sRef } from 'firebase/storage';
-import { onValue, push, ref, remove, set } from 'firebase/database';
+import { onValue, push, ref, remove, set, update } from 'firebase/database';
 import { useParams } from 'react-router-dom';
 import { ClipLoader } from 'react-spinners';
 export default function Media({toast}) {
@@ -25,53 +25,7 @@ export default function Media({toast}) {
   const [menuType, setMenuType] = useState(null);
   const [btnloader,setBTnloader]=useState(false)
 console.log(anchorEl)
- /////////edit image/////////////
- const [editImageId, setEditImageId] = useState(null);
- const [editImageTitle, setEditImageTitle] = useState("");
- const [editImageDes, setEditImageDes] = useState("");
- const[editimage,setEditimage]=useState("");
- const[isEditImageOpen,setIsEditImageOpen]=useState(false);
- 
- const handleEditcurentimage = (post) => {
-   setEditImageId(post?.id);
-   setEditImageTitle(post?.imageTitle);
-   setEditImageDes(post?.imageDes);
-   setEditimage(post?.mediaImage)
-   setIsEditImageOpen(true);
 
- };
- 
- const handleEditimage = () => {
-   if(!editImageTitle){
-     toast.error("Title are required.")
-     return;
-   }
-   if(!editimage){
-     toast.error("image are required.")
-     return;
-   }
-   setBTnloader(true)
-   const postRef = ref(db, `Profile/${id}/imageMedia/${editImageId}`);
-   const updatedPost = {
-     id: editImageId,
-     imageTitle: editImageTitle,
-     imageDes: editImageDes,
-     mediaImage: editimage,
-   };
- 
-   set(postRef, updatedPost)
-     .then(() => {
-       toast.success("Image updated successfully");
-       setIsEditImageOpen(false);
-       setBTnloader(false)
-       setAnchorEl(null);
-     })
-     .catch(error => {
-       toast.error("Failed to update post: " + error.message);
-     });
- };
- 
- ///////////end edit image////////////
 
  const handleClick1 = (event, id, type) => {
   setAnchorEl(event.currentTarget);
@@ -150,34 +104,36 @@ console.log(anchorEl)
     };
     const {id}=useParams();
     const handleAddimage = async (imageMedia) => {
-      if(!mediaImage){
-        toast.error("Image are required.")
+      if (!mediaImage) {
+        toast.error("Image is required.");
         return;
       }
-      if(!imageTitle){
-        toast.error("Title are required.")
+      if (!imageTitle) {
+        toast.error("Title is required.");
         return;
       }
+    
       try {
-        setBTnloader(true)
+        setBTnloader(true);
         let uploadedImageUrl = "";
         if (mediaImage) {
-        const uniqueNum = Date.now();
-        const name = 'mediaImage' + uniqueNum;
-        const storageRef = sRef(storage, name);
+          const uniqueNum = Date.now();
+          const name = 'mediaImage' + uniqueNum;
+          const storageRef = sRef(storage, name);
     
+          const base64Data = mediaImage.split(',')[1];
+          const bytes = Uint8Array.from(atob(base64Data), c => c.charCodeAt(0));
     
-        const base64Data = mediaImage.split(',')[1]; 
-        const bytes = Uint8Array.from(atob(base64Data), c => c.charCodeAt(0));
+          // Upload the image to Firebase Storage
+          await uploadBytes(storageRef, bytes, {
+            contentType: "image/png",
+          });
     
-        await uploadBytes(storageRef, bytes, {
-          contentType: "image/png",
-        });
+          // Get the download URL of the uploaded image
+          uploadedImageUrl = await getDownloadURL(storageRef);
+        }
     
-        uploadedImageUrl = await getDownloadURL(storageRef);
-      }
-    
-    
+        // Reference to the 'Profile/{id}/imageMedia' path in Firebase Realtime Database
         const postsRef = ref(db, `Profile/${id}/imageMedia`);
         const newPostRef = push(postsRef);
         const postId = newPostRef.key;
@@ -185,15 +141,17 @@ console.log(anchorEl)
         const postWithId = {
           ...imageMedia,
           id: postId,
-          mediaImage: mediaImage 
+          mediaImage: uploadedImageUrl, // Use the uploaded image URL
         };
     
+        // Save the data in Firebase Realtime Database
         await set(newPostRef, postWithId);
+    
         toast.success("Image successfully added!");
-        handleclose()
-        setBTnloader(false)
+        handleclose();
+        setBTnloader(false);
       } catch (error) {
-        toast.error("Failed to add timeline: " + error.message);
+        toast.error("Failed to add image: " + error.message);
       }
     };
 
@@ -238,7 +196,88 @@ console.log(anchorEl)
 
 
     //////////end video media upload//////////////
+ /////////edit image/////////////
+ const [editImageId, setEditImageId] = useState("");
+ const [editImageTitle, setEditImageTitle] = useState("");
+ const [editImageDes, setEditImageDes] = useState("");
+ const[editimage,setEditimage]=useState("");
+ const[isEditImageOpen,setIsEditImageOpen]=useState(false);
+ 
+ const handleEditcurentimage = (post) => {
+  console.log(post)
+   setEditImageId(post?.id);
+   setEditImageTitle(post?.imageTitle);
+   setEditImageDes(post?.imageDes);
+   setEditimage(post?.mediaImage)
+   setIsEditImageOpen(true);
 
+ };
+ 
+ const handleEditimage = () => {
+  if (!editImageTitle) {
+    toast.error("Title is required.");
+    return;
+  }
+  if (!editimage) {
+    toast.error("Image is required.");
+    return;
+  }
+
+  setBTnloader(true);
+
+  // Convert base64 image to a Blob
+  const byteCharacters = atob(editimage.split(",")[1]);
+  const byteNumbers = new Array(byteCharacters.length);
+  for (let i = 0; i < byteCharacters.length; i++) {
+    byteNumbers[i] = byteCharacters.charCodeAt(i);
+  }
+  const byteArray = new Uint8Array(byteNumbers);
+  const blob = new Blob([byteArray], { type: 'image/png' });
+
+  // Generate a unique name for the image (you can use a timestamp + original filename)
+  let imageName = new Date().getTime() + '_editimage.png'; // Example name generation
+
+  // Reference to Firebase Storage
+  const storageRef = sRef(storage, `images/${imageName}`);
+
+  // Upload image to Firebase Storage
+  uploadBytes(storageRef, blob)
+    .then(() => {
+      // Get download URL of the uploaded image
+      getDownloadURL(storageRef)
+        .then(URL => {
+          // Update the image data in Firebase Realtime Database
+          const postRef = ref(db, `Profile/${id}/imageMedia/${editImageId}`);
+          const updatedPost = {
+            id: editImageId,
+            imageTitle: editImageTitle,
+            imageDes: editImageDes,
+            mediaImage: URL, // Update with the download URL
+          };
+
+          // Update data in Firebase Realtime Database
+          update(postRef, updatedPost)
+            .then(() => {
+              toast.success("Image updated successfully");
+              setIsEditImageOpen(false);
+              setBTnloader(false);
+              setAnchorEl(null);
+            })
+            .catch(error => {
+              toast.error("Failed to update image: " + error.message);
+            });
+        })
+        .catch(error => {
+          toast.error("Failed to get download URL: " + error.message);
+        });
+    })
+    .catch(error => {
+      toast.error("Failed to upload image: " + error.message);
+    });
+};
+
+ 
+ ///////////end edit image////////////
 /////////////video media edit/////////////
 
 const [editVideoId, setEditVideoId] = useState(null);

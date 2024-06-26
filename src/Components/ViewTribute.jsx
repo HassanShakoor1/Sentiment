@@ -7,8 +7,9 @@ import { GoDotFill, GoHeart } from "react-icons/go";
 import { RiShareForwardLine } from "react-icons/ri";
 import chat from "../images/Chat (1).png";
 import send from "../images/Send message.png";
+import delet from "../images/Delete Bin 4.png";
 import user from "../images/Ellipse 2723 (1).png";
-import { Modal, Box, IconButton, colors, Radio } from "@mui/material";
+import { Modal, Box, IconButton, colors, Radio, Menu, Fade, MenuItem } from "@mui/material";
 import back from "../images/Frame 1171277120.png";
 import tick from "../images/Check circle.png";
 import cross from "../images/cross.png";
@@ -22,13 +23,15 @@ import {
   query,
   ref,
   update,
-  set
+  set,
+  get
 } from "firebase/database";
 import { getDownloadURL, ref as sRef, uploadBytes } from "firebase/storage";
 import { useParams } from "react-router-dom";
 import { Slide, ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.min.css";
-export default function ViewTribute() {
+import { FiMoreVertical } from "react-icons/fi";
+export default function ViewTribute({userViewProfile}) {
   let [Tribute, setTributes] = useState();
   let handleopen = () => {
     setTributes(true);
@@ -139,6 +142,7 @@ export default function ViewTribute() {
         title: "",
         description: "",
       });
+      handleclose();
     } else {
       toast.error("All fields are required");
     }
@@ -162,7 +166,7 @@ export default function ViewTribute() {
         setloading(false);
       }
 
-      MediaKeyStatusMap;
+ 
       // setmylist(Object.values(data));
 
       // setfiltered(Object.values(data));
@@ -176,7 +180,7 @@ export default function ViewTribute() {
     const starCountRef = query(
       ref(db, "/User"),
       orderByChild("id"),
-      equalTo(admin)
+      equalTo(userViewProfile?.userId)
     );
     onValue(starCountRef, async (snapshot) => {
       const data = await snapshot.val();
@@ -242,9 +246,17 @@ export default function ViewTribute() {
     }
   };
 
-  const updateLikes=(post)=>{
-    update(ref(db, `tributes/${post?.id}/`), { likes:post?.likes+1});
+const updateLikes = (post) => {
+  if (post && post.id != null) {
+    const currentLikes = parseInt(post.likes, 10) || 0; // Ensure likes is treated as a number
+    const newLikesCount = currentLikes + 1;
+    update(ref(db, `tributes/${post.id}/`), { likes: newLikesCount });
+  } else {
+    console.error("Invalid post data");
   }
+};
+
+
 
   useEffect(() => {
     getAdmin();
@@ -270,7 +282,53 @@ export default function ViewTribute() {
       return Math.round(elapsed / msPerDay) + " days ago";
     }
   }
-  console.log(selectedPost);
+
+  const [anchorEl, setAnchorEl] = useState(null);
+ const [cmntTimeStamp, setCmntTimeStamp] = useState("");
+ const [commnetId, setCommnetId] = useState("");
+
+  const handleClick = (event,item,allitem) => {
+    console.log(item)
+    setAnchorEl(event.currentTarget);
+    setCmntTimeStamp(item)
+setCommnetId(allitem?.id)
+
+  };
+console.log(commnetId)
+  const handleClose = () => {
+    setAnchorEl(null);
+  };
+const handleDeleteCmnt = (timeStamp) => {
+   
+  const postRef = ref(db, `tributes/${commnetId}/comments`);
+  
+  get(postRef)
+    .then((snapshot) => {
+      const posts = snapshot.val();
+    
+      if (posts) {
+        let remainingComnt = posts.filter((elm) => {
+          return elm.timeStamp !== timeStamp;
+        });
+             console.log(remainingComnt)
+        set(ref(db, `tributes/${commnetId}/comments`), remainingComnt).then(() => {
+          toast.success("Comment deleted successfully");
+        });
+      }
+    })
+    .catch((error) => {
+      console.error("Error deleting comment:", error);
+      toast.error("Failed to delete comment");
+    });
+};
+ function truncateText(text, maxLength) {
+            if (text?.length <= maxLength) {
+              return text;
+            } else {
+              return text?.slice(0, maxLength) + '...';
+            }
+          }
+
   return (
     <>
       <div className="flex justify-center items-center flex-col w-[100%] mt-5">
@@ -317,7 +375,10 @@ export default function ViewTribute() {
                   {timeDifference(item?.timeStamp)}
                 </p>
               </div>
+              <div className="w-[100%] justify-start">
+                <p className="text-[#5F6161] font-[600] mt-2">{item?.title}</p>
               <p className="text-[#5F6161] mt-2">{item?.description}</p>
+              </div>
               <img
                 className="w-[100%] h-[330px] object-cover rounded-[8px] mt-2"
                 src={item?.image}
@@ -393,40 +454,48 @@ export default function ViewTribute() {
 
 Object.values(item?.comments)?.map((singleComment,i)=>{
 return  <div className="flex items-center justify-center flex-col bg-[#EFF7F7] rounded-[5px] mt-5 w-[100%]">
-<div className="flex items-center pl-3 pt-3 w-[100%]">
+<div className="flex items-center justify-around pt-3 w-[100%]">
   <img
-    className="w-[40px] h-[40px] object-cover rounded-[50%]"
+    className="w-[40px] h-[40px] ml-2 object-cover rounded-[50%]"
     src={user}
     alt=""
   />
-  <p className="text-[16px] font-bold ml-3 text-[#062A27]">
-    {singleComment?.firstName} {singleComment?.lastName}
+  <p className="text-[13px] w-[130px]   font-bold ml-3 text-[#062A27]">
+    {truncateText(singleComment?.firstName+" "+singleComment?.lastName,20)} 
     
   </p>
   <GoDotFill className="text-[#5F6161] ml-2" />
-  <p className="text-[#5F6161] ml-2"> {timeDifference(singleComment?.timeStamp)}</p>
+  <p className="text-[#5F6161]  text-[12px] ml-2"> {timeDifference(singleComment?.timeStamp)}</p>
+               <FiMoreVertical
+                     onClick={(e) => handleClick(e, singleComment?.timeStamp,item)} 
+                      className="text-[#5F6161] text-[20px] ml-5 font-bold"
+                    />    
 </div>
-<p className="pl-3 pb-3 pt-2 text-[15px] text-[#5F6161]">
+<p className="pl-3 pb-3 pt-2 text-[15px] w-[70%] text-[#5F6161]">
 {singleComment?.comment}
 </p>
 </div>
               })
 :
               <div className="flex items-center justify-center flex-col bg-[#EFF7F7] rounded-[5px] mt-5 w-[100%]">
-                <div className="flex items-center pl-3 pt-3 w-[100%]">
+                <div className="flex items-center justify-around  pt-3 w-[100%]">
                   <img
-                    className="w-[40px] h-[40px] object-cover rounded-[50%]"
+                    className="w-[40px] h-[40px] ml-2 object-cover rounded-[50%]"
                     src={user}
                     alt=""
                   />
-                  <p className="text-[16px] font-bold ml-3 text-[#062A27]">
-                    {Object.values(item?.comments)?.[0]?.firstName} {Object.values(item?.comments)?.[0]?.lastName}
+                  <p className="text-[13px] font-bold w-[130px] ml-3 text-[#062A27]">
+                    {truncateText(Object.values(item?.comments)?.[0]?.firstName+" "+Object.values(item?.comments)?.[0]?.lastName,20)} 
                     
                   </p>
-                  <GoDotFill className="text-[#5F6161] ml-2" />
-                  <p className="text-[#5F6161] ml-2"> {timeDifference(Object.values(item?.comments)?.[0]?.timeStamp)}</p>
+                  <GoDotFill className="text-[#5F6161]  ml-2" />
+                  <p className="text-[#5F6161] text-[12px] ml-2"> {timeDifference(Object.values(item?.comments)?.[0]?.timeStamp)}</p>
+                 <FiMoreVertical
+                     onClick={(e) => handleClick(e,Object.values(item?.comments)?.[0]?.timeStamp,item) } 
+                      className="text-[#5F6161] text-[20px] ml-5 font-bold"
+                    />
                 </div>
-                <p className="pl-3 pb-3 pt-2 text-[15px] text-[#5F6161]">
+                <p className="pl-3 pb-3 pt-2 w-[70%] text-[15px] text-[#5F6161]">
                {Object.values(item?.comments)?.[0]?.comment}
                 </p>
               </div>
@@ -491,10 +560,10 @@ return  <div className="flex items-center justify-center flex-col bg-[#EFF7F7] r
             <div className="flex  items-center mt-5 w-[90%]">
               <img
                 className="w-[40px] h-[40px] object-cover rounded-[50%]"
-                src={img3}
+                src={userViewProfile?.userProfile}
               />
               <p className="text-[16px] font-bold Satoshi-bold ml-3 text-[#062A27]">
-                Mis Elza
+             {userViewProfile?.firstName}{userViewProfile?.lastName}
               </p>
             </div>
             <div className="flex justify-start flex-col w-[90%] mt-5">
@@ -567,6 +636,28 @@ return  <div className="flex items-center justify-center flex-col bg-[#EFF7F7] r
           <br></br>
         </Box>
       </Modal>
+            <Menu
+        id="fade-menu"
+        anchorEl={anchorEl}
+        keepMounted
+        open={Boolean(anchorEl)}
+        onClose={handleClose}
+        TransitionComponent={Fade}
+        anchorOrigin={{
+          vertical: 'bottom',
+          horizontal: 'center',
+        }}
+        transformOrigin={{
+          vertical: 'top',
+          horizontal: 'right',
+        }}
+        getContentAnchorEl={null}
+      >
+        <MenuItem onClick={() => { handleDeleteCmnt(cmntTimeStamp); handleClose(); }}  className='flex items-center'>
+          <img className='w-[20px] mr-3' src={delet} alt="delete" />
+          <p className='text-[red]'>Delete comment</p>
+        </MenuItem>
+      </Menu>
     </>
   );
 }

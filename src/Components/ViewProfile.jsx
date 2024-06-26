@@ -239,7 +239,9 @@ loading={loading}
 
          }
          {tributes &&
-          <ViewTribute/>
+          <ViewTribute
+          userViewProfile={userViewProfile}
+          />
            }
            {destails &&
             <ViewDetails
