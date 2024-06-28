@@ -121,7 +121,7 @@ export default function ViewTribute({ userViewProfile, id }) {
   });
 
   const addTribute = async () => {
-    if (tributeData.title && tributeData.description && inputValue) {
+    if (tributeData.title && tributeData.description) {
       let name = new Date().getTime() + inputValue.name;
       const storageRef = sRef(storage, name);
       uploadBytes(storageRef, inputValue)

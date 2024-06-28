@@ -10,6 +10,7 @@ import React, { useEffect, useState } from "react";
 import { db } from "../Firebase/firebaseConfig";
 import profile1 from "../images/Group 661 (2).png";
 import { useNavigate, useParams } from "react-router-dom";
+import { IoIosArrowBack } from "react-icons/io";
 
 const TagAssign = () => {
   const { tag } = useParams();
@@ -58,6 +59,10 @@ const TagAssign = () => {
         const data = await snapshot.val();
         if (data) {
           setUserProfiles(Object.values(data));
+          setProfileMode(true);
+          setRedirectLoading(false);
+        } else {
+          setUserProfiles([]);
           setProfileMode(true);
           setRedirectLoading(false);
         }
@@ -109,10 +114,14 @@ const TagAssign = () => {
   return (
     <div className="h-[100vh] w-[100%] flex justify-center items-center">
       {profileMode ? (
-        <div className="w-[95%] h-[95%]">
+        <div className="w-[95%] h-[95%] relative">
+          <IoIosArrowBack
+            className="text-2xl absolute left-0 top-[2px] cursor-pointer"
+            onClick={() => setProfileMode(false)}
+          />
           <p className="text-center">Select medallion to assign QR</p>
           <div className="w-[100%] h-[85%] mt-2 overflow-y-scroll ">
-            {userProfiles?.length > 0 &&
+            {userProfiles?.length > 0 ? (
               findUnverified(userProfiles)?.map((elm) => {
                 return (
                   <div className="w-[100%] h-[50px] bg-[white] rounded-full shadow-md mt-3 flex items-center cursor-pointer">
@@ -137,7 +146,12 @@ const TagAssign = () => {
                     </div>
                   </div>
                 );
-              })}
+              })
+            ) : (
+              <div className="w-[100%] h-[100%] flex justify-center items-center">
+                No unverified profiles to show
+              </div>
+            )}
           </div>
         </div>
       ) : (
@@ -164,12 +178,20 @@ const TagAssign = () => {
                     />
                   </div>
                   <p className="w-[60%] line-clamp-1">
-                    {elm?.firstName + " " + elm?.lastName}
+                    {elm?.firstName ? elm?.firstName : "" + " " + elm?.lastName}
                   </p>
 
                   <div
                     className="w-[17%] h-[30px] rounded-full bg-black ml-1 text-white flex justify-center items-center text-sm"
-                    onClick={() => setSelectedProfile(elm)}
+                    onClick={() => {
+                      !redirectLoading && setSelectedProfile(elm);
+                    }}
+                    style={{
+                      opacity:
+                        redirectLoading && selectedProfile?.id != elm?.id
+                          ? "50%"
+                          : "100%",
+                    }}
                   >
                     {redirectLoading && selectedProfile?.id === elm?.id
                       ? "loading..."
