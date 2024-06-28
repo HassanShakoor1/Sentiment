@@ -10,6 +10,7 @@ import AudioPlayer from "react-h5-audio-player";
 import smile from "../images/Smiling.png";
 import send from "../images/Send message.png";
 import comnt from "../images/comnt.png";
+import profile1 from "../images/Group 661 (2).png";
 import InputEmoji from "react-input-emoji";
 import { Slide } from "@mui/material";
 import { IoIosClose } from "react-icons/io";
@@ -329,7 +330,7 @@ export default function ViewMedia({
               <div className="flex justify-start items-center w-[100%] mt-5">
                 <img
                   className="w-[50px] h-[50px] border-2 border-[#B08655] object-cover rounded-[50%]"
-                  src={userViewProfile?.userProfile}
+                  src={userViewProfile?.userProfile?userViewProfile?.userProfile:profile1}
                 />
                 <p className="text-[16px] font-bold Satoshi-bold ml-3 border-b-2 border-[#B08655] text-[#B08655] ">
                   {userViewProfile?.firstName} {userViewProfile?.lastName}

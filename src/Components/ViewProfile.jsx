@@ -477,7 +477,7 @@ export default function ViewProfile() {
             top: "50%",
             left: "50%",
             transform: "translate(-50%, -50%)",
-            width: 340,
+            width: 300,
             bgcolor: "white",
             borderRadius: "10px",
             background: "#FFF",
@@ -503,7 +503,9 @@ export default function ViewProfile() {
             </div>
           </div>
           <div className="flex justify-center items-center mt-2 w-[100%]">
-            <Share />
+            <Share
+            toast={toast}
+            />
           </div>
           <br></br>
         </Box>

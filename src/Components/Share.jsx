@@ -56,7 +56,7 @@ import {
   import ContentCopyRoundedIcon from '@mui/icons-material/ContentCopyRounded';
 
 
-export default function Share() {
+export default function Share({toast}) {
     const shareUrl = window.location.href
    
 
@@ -65,6 +65,7 @@ export default function Share() {
       navigator.clipboard.writeText(shareUrl)
         .then(() => {
           console.log('URL copied to clipboard:', shareUrl);
+          toast.success("Copied!")
           // You can add additional actions here, like displaying a success message
         })
         .catch((error) => {
@@ -76,15 +77,15 @@ export default function Share() {
    <>
    <div className="Demo__container w-[100%] flex justify-center items-center flex-wrap">
    <div className="Demo__some-network">
-   <div className=" rounded-[50%] h-[33px] flex items-center justify-center w-[33px] bg-slate-500 " onClick={copyToClipboard}>
+   <div className=" rounded-[50%] h-[40px] flex items-center justify-center w-[40px] bg-slate-500 " onClick={copyToClipboard}>
    <ContentCopyRoundedIcon
-   style={{color:"white",fontSize:"16px"}}
+   style={{color:"white",fontSize:"25px"}}
      url={shareUrl}
    
      body="body"
      className="Demo__some-network__share-button"
    >
-     <ContentCopyRoundedIcon style={{color:"white"}} size={32} round />
+     <ContentCopyRoundedIcon style={{color:"white"}} size={40} round />
 
    </ContentCopyRoundedIcon>
    </div>
@@ -92,7 +93,7 @@ export default function Share() {
    <div className="Demo__some-network">
      <FacebookShareButton url={shareUrl} className="Demo__some-network__share-button">
        <FacebookIcon
-        size={32} round />
+        size={40} round />
      </FacebookShareButton>
 
      <div>
@@ -106,22 +107,10 @@ export default function Share() {
        appId="521270401588372"
        className="Demo__some-network__share-button"
      >
-       <FacebookMessengerIcon size={32} round />
+       <FacebookMessengerIcon size={40} round />
      </FacebookMessengerShareButton>
    </div>
-   <div className="Demo__some-network">
-     <PinterestShareButton
-       url={String(window.location)}
-      
-       className="Demo__some-network__share-button"
-     >
-       <PinterestIcon size={32} round />
-     </PinterestShareButton>
 
-     <div>
-    
-     </div>
-   </div>
 
    <div className="Demo__some-network">
      <TwitterShareButton
@@ -129,7 +118,7 @@ export default function Share() {
        
        className="Demo__some-network__share-button"
      >
-       <XIcon size={32} round />
+       <XIcon size={40} round />
      </TwitterShareButton>
    </div>
 
@@ -139,7 +128,7 @@ export default function Share() {
        
        className="Demo__some-network__share-button"
      >
-       <TelegramIcon size={32} round />
+       <TelegramIcon size={40} round />
      </TelegramShareButton>
    </div>
 
@@ -150,37 +139,17 @@ export default function Share() {
        separator=":: "
        className="Demo__some-network__share-button"
      >
-       <WhatsappIcon size={32} round />
+       <WhatsappIcon size={40} round />
      </WhatsappShareButton>
    </div>
 
-   <div className="Demo__some-network">
-     <LinkedinShareButton url={shareUrl} className="Demo__some-network__share-button">
-       <LinkedinIcon size={32} round />
-     </LinkedinShareButton>
-   </div>
+   
 
 
     
     
    
 
-
-   <div className="Demo__some-network">
-     <RedditShareButton
-       url={shareUrl}
-       
-       windowWidth={660}
-       windowHeight={460}
-       className="Demo__some-network__share-button"
-     >
-       <RedditIcon size={32} round />
-     </RedditShareButton>
-
-     <div>
-     
-     </div>
-   </div>
 
    
    
@@ -193,7 +162,7 @@ export default function Share() {
        body="body"
        className="Demo__some-network__share-button"
      >
-       <EmailIcon size={32} round />
+       <EmailIcon size={40} round />
      </EmailShareButton>
    </div>
   
