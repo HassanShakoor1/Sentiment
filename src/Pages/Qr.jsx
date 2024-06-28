@@ -7,12 +7,7 @@ const Qr = () => {
   const origin = window.location.origin;
   return (
     <div className="w-[100%] h-[100vh] flex justify-center items-center bg-white">
-      <QRCode
-        id="qrCodeEl"
-        value={origin + "/" + id}
-        size="171"
-        // eyeRadius={10}
-      />
+      <QRCode id="qrCodeEl" value={origin + "/viewprofile" + id} size="171" />
     </div>
   );
 };

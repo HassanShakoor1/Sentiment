@@ -40,7 +40,7 @@ import { useParams } from "react-router-dom";
 import { Slide, ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.min.css";
 import { FiMoreVertical } from "react-icons/fi";
-export default function ViewTribute({ userViewProfile }) {
+export default function ViewTribute({ userViewProfile, id }) {
   let [Tribute, setTributes] = useState();
   let handleopen = () => {
     setTributes(true);
@@ -49,7 +49,7 @@ export default function ViewTribute({ userViewProfile }) {
     setTributes(false);
   };
   // const fileTypes = ["JPG", "PNG", "GIF"];
-  const { id } = useParams();
+
   const [file, setFile] = useState(null);
   const [loading, setloading] = useState(false);
   const [seeMore, setseeMore] = useState(false);
@@ -409,11 +409,14 @@ export default function ViewTribute({ userViewProfile }) {
                 </p>
                 <p className="text-[14px] text-[#5F6161] ml-1">Comments</p>
               </div>
-              <div className="w-[100%] flex justify-between items-center">
+              <div className="w-[100%] mt-2">
+                <p className="text-left text-[#5F6161]">Add a comment</p>
+              </div>
+              <div className="w-[100%] flex justify-between items-center mt-1">
                 <input
                   type="text"
                   placeholder="First Name*"
-                  className="mt-3 w-[47%] outline-none border border-[#DCE5E5]  h-[40px] text-[14px] rounded-[5px] pl-1 pt-1 pr-1"
+                  className=" w-[47%] outline-none border border-[#DCE5E5]  h-[40px] text-[14px] rounded-[5px] pl-1 pt-1 pr-1"
                   onChange={(e) =>
                     setCommentData({
                       ...commentData,
@@ -427,7 +430,7 @@ export default function ViewTribute({ userViewProfile }) {
                 <input
                   type="text"
                   placeholder="Last Name*"
-                  className="mt-3 w-[47%] outline-none border border-[#DCE5E5]  h-[40px] text-[14px] rounded-[5px] pl-1 pt-1 pr-1"
+                  className=" w-[47%] outline-none border border-[#DCE5E5]  h-[40px] text-[14px] rounded-[5px] pl-1 pt-1 pr-1"
                   onChange={(e) =>
                     setCommentData({ ...commentData, lastName: e.target.value })
                   }

@@ -13,6 +13,7 @@ import Home from "./Pages/Home";
 import Editprofile from "./Components/Editprofile";
 import ViewProfile from "./Components/ViewProfile";
 import Qr from "./Pages/Qr";
+import TagAssign from "./Pages/TagAssign";
 function App() {
   const RequireAuth = ({ children }) => {
     const currentUser = localStorage.getItem("userId");
@@ -29,7 +30,7 @@ function App() {
         <div className="app">
           <div className="screen">
             <Routes>
-              <Route path="/:id" element={<Signup />} />
+              <Route path="/signup" element={<Signup />} />
               <Route path="/" element={<Login />} />
               <Route path="/forgot" element={<Forgotpassword />} />
               <Route path="/newpassword" element={<CreatenewPassword />} />
@@ -61,6 +62,7 @@ function App() {
                   </RequireAuth>
                 }
               />
+              <Route path="/assign/:tag" element={<TagAssign />} />
               <Route path="/viewprofile/:id" element={<ViewProfile />} />
             </Routes>
           </div>

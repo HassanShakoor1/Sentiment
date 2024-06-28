@@ -92,8 +92,13 @@ export default function Editprofile() {
     setTributes(true);
   };
   const nevigate = useNavigate();
-  const handleNavigateview = (id) => {
-    nevigate(`/viewprofile/${id}`);
+  const handleNavigateview = (user) => {
+    if(user?.status==="Verified"&& user?.tagId){
+      nevigate(`/viewprofile/${user?.tagId}`);
+    }else{
+      nevigate(`/viewprofile/${user?.id}`);
+    }
+   
   };
   let [slide, setSlide] = useState();
   let handleslide = () => {
@@ -357,7 +362,7 @@ export default function Editprofile() {
   const [showModal, setShowModal] = useState(false);
   const handleStatusChange = (e) => {
     const newStatus = e.target.value;
-    if (newStatus === 'Active') {
+    if (newStatus === "Active") {
       setShowModal(true);
     } else {
       setUserdata({ ...userdata, status: newStatus });
@@ -536,7 +541,7 @@ export default function Editprofile() {
           </h1>
           <p
             className={`font-bold text-[16px] flex items-center ${
-              userProfile?.status === "Active"
+              userProfile?.status === "Verified"
                 ? "text-[#3F9A55]"
                 : "text-red-500"
             }`}
@@ -548,19 +553,21 @@ export default function Editprofile() {
           </p>
           <div className="w-[100%] flex justify-center items-center mt-3">
             <button
-              onClick={() => handleNavigateview(userProfile?.id)}
+              onClick={() => handleNavigateview(userProfile)}
               className="bg-[#062A27] text-[white] rounded-[30px] w-[120px] h-[35px] flex justify-center items-center text-[13px] mr-2"
             >
               {" "}
               <img className="w-[18px] mr-2" src={eye} />
               Public View
             </button>
-            <button
-              onClick={handlestatus}
-              className="border-[#062A27] border text-[#062A27]  rounded-[30px] w-[120px] h-[35px] flex justify-center items-center text-[13px]"
-            >
-              Status Info
-            </button>
+            {userProfile?.status != "Verified" && (
+              <button
+                onClick={handlestatus}
+                className="border-[#062A27] border text-[#062A27]  rounded-[30px] w-[120px] h-[35px] flex justify-center items-center text-[13px]"
+              >
+                Status Info
+              </button>
+            )}
             <div
               onClick={handleClick}
               className="border flex justify-center items-center border-[#062A27] ml-2 bg-white w-[35px] h-[35px] rounded-[50%]"
@@ -725,75 +732,85 @@ export default function Editprofile() {
             },
           }}
         >
-        <div className="flex items-center w-[100%] flex-col">
-        <div className="flex w-[90%] justify-between items-center  mt-5">
-          <div className="flex items-center">
-            <img
-              onClick={handleClosestatus}
-              className="w-[25px] h-[25px]"
-              src={back}
-            />
-            <p className="text-[16px] ml-3 text-[#B08655] font-bold Satoshi-bold">
-              Back to profile
-            </p>
-          </div>
-          <div
-            onClick={handleClosestatus}
-            className="flex justify-center items-center border border-[#E5E8EE] w-[25px] h-[25px] rounded-[50%]"
-          >
-            <img className="w-[10px]" src={cross} />
-          </div>
-        </div>
-        <div className="flex justify-center flex-col items-center w-[90%]">
-        <div>
-          <div className="text-[16px] font-bold Satoshi-bold mt-5">Profile type</div>
-          <div className="flex flex-col">
-            <FormControl className="w-[100%] flex flex-col" component="fieldset">
-              <RadioGroup
-                row
-                aria-label="privacy"
-                name="privacy"
-                value={userdata?.status}
-                onChange={handleStatusChange}
-              >
-                <FormControlLabel
-                  value="Unverified"
-                  control={<Radio style={{ color: "#2F9089" }} />}
-                  label="Unverified"
+          <div className="flex items-center w-[100%] flex-col">
+            <div className="flex w-[90%] justify-between items-center  mt-5">
+              <div className="flex items-center">
+                <img
+                  onClick={handleClosestatus}
+                  className="w-[25px] h-[25px]"
+                  src={back}
                 />
-                <h2 className="text-[13px] mt-2 mb-2 text-[#5F6161]">
-                  Unverified profiles are FREE and fully functional profiles that only the creator of the profile can see.
-                  You can convert your unverified profile to a limited profile or a fully active and public profile.
-                </h2>
-                <FormControlLabel
-                  value="Limited"
-                  control={<Radio style={{ color: "#2F9089" }} />}
-                  label="Limited"
-                />
-                <h2 className="text-[13px] mt-2 mb-2 text-[#5F6161]">
-                  Limited profiles are FREE and accessible to the public and connected to a Turning Hearts medallion, but with
-                  limited accessibility. Visitors can only view the Memorial page but not the Tribute page to contribute their
-                  own post and interact with others.
-                </h2>
-                <FormControlLabel
-                  value="Active"
-                  control={<Radio style={{ color: "#2F9089" }} />}
-                  label="Active"
-                />
-                <h2 className="text-[13px] mt-2 mb-2 text-[#5F6161]">
-                  Active profiles are paid profiles that are connected to a Turning Hearts medallion.
-                </h2>
-              </RadioGroup>
-            </FormControl>
-            <button
-              onClick={handleUpdateUser}
-              className="bg-[#062A27] rounded-[30px] flex border border-[#B08655] justify-center items-center h-[45px] mt-5 w-[100%] font-[500] text-[15px] cursor-pointer text-white Satoshi-bold"
-            >
-              Change Profile Type
-            </button>
-          </div>
-        </div>
+                <p className="text-[16px] ml-3 text-[#B08655] font-bold Satoshi-bold">
+                  Back to profile
+                </p>
               </div>
+              <div
+                onClick={handleClosestatus}
+                className="flex justify-center items-center border border-[#E5E8EE] w-[25px] h-[25px] rounded-[50%]"
+              >
+                <img className="w-[10px]" src={cross} />
+              </div>
+            </div>
+            <div className="flex justify-center flex-col items-center w-[90%]">
+              <div>
+                <div className="text-[16px] font-bold Satoshi-bold mt-5">
+                  Profile type
+                </div>
+                <div className="flex flex-col">
+                  <FormControl
+                    className="w-[100%] flex flex-col"
+                    component="fieldset"
+                  >
+                    <RadioGroup
+                      row
+                      aria-label="privacy"
+                      name="privacy"
+                      value={userdata?.status}
+                      onChange={handleStatusChange}
+                    >
+                      <FormControlLabel
+                        value="Unverified"
+                        control={<Radio style={{ color: "#2F9089" }} checked />}
+                        label="Unverified"
+                      />
+                      <h2 className="text-[13px] mt-2 mb-2 text-[#5F6161]">
+                        Unverified profiles are FREE and fully functional
+                        profiles that only the creator of the profile can see.
+                        You can convert your unverified profile to a fully
+                        active and public profile.
+                      </h2>
+                      {/* <FormControlLabel
+                        value="Limited"
+                        control={<Radio style={{ color: "#2F9089" }} />}
+                        label="Limited"
+                      />
+                      <h2 className="text-[13px] mt-2 mb-2 text-[#5F6161]">
+                        Limited profiles are FREE and accessible to the public
+                        and connected to a Turning Hearts medallion, but with
+                        limited accessibility. Visitors can only view the
+                        Memorial page but not the Tribute page to contribute
+                        their own post and interact with others.
+                      </h2> */}
+                      <FormControlLabel
+                        value="Active"
+                        control={<Radio style={{ color: "#2F9089" }} />}
+                        label="Verified"
+                      />
+                      <h2 className="text-[13px] mt-2 mb-2 text-[#5F6161]">
+                        Verified profiles are paid profiles that are connected
+                        to a Sentiments medallion.
+                      </h2>
+                    </RadioGroup>
+                  </FormControl>
+                  {/* <button
+                    onClick={handleUpdateUser}
+                    className="bg-[#062A27] rounded-[30px] flex border border-[#B08655] justify-center items-center h-[45px] mt-5 w-[100%] font-[500] text-[15px] cursor-pointer text-white Satoshi-bold"
+                  >
+                    Change Profile Type
+                  </button> */}
+                </div>
+              </div>
+            </div>
           </div>
           <br />
         </Box>
@@ -1080,53 +1097,59 @@ export default function Editprofile() {
         toastClassName="custom-toast"
       />
       <Modal
-      open={showModal}
-      onClose={handleCloseModal}
-      aria-labelledby="activation-instructions-modal"
-      aria-describedby="activation-instructions-description"
-    >
-    <Box
-    sx={{
-      position: "absolute",
-      top: "50%",
-      left: "50%",
-      transform: "translate(-50%, -50%)",
-      width: 340,
-      bgcolor: "white",
-      borderRadius: "10px",
-      background: "#FFF",
-      outline: "none",
-      boxShadow: 24,
-      maxHeight: "90vh",
-      overflowY: "auto",
-      fontFamily: "Satoshi",
-      "&::-webkit-scrollbar": {
-        display: "none",
-      },
-    }}
-  >
-  <div className="flex items-center w-[100%] flex-col">
-  <div className="flex w-[90%] justify-between items-center  mt-5">
-    <div className="flex items-center">
-     
-    </div>
-    <div
-      onClick={handleCloseModal}
-      className="flex justify-center items-center border border-[#E5E8EE] w-[25px] h-[25px] rounded-[50%]"
-    >
-      <img className="w-[10px]" src={cross} />
-    </div>
-  </div>
-      <div className="w-[90%]">
-        <h2 className="text-[16px] font-bold mb-2">How to activate this account</h2>
-        <p className="text-[16px] font-[400] mb-2">Step 1: Buy a medallion</p>
-        <p className="text-[16px] font-[400] mb-2">Step 2: Scan the medallion and select this account from the list</p>
-        <p className="text-[16px] font-[400] mb-2">Step 3: Share the link with family and friends</p>
-      </div>
-      <br></br>
-      </div>
-      </Box>
-    </Modal>
+        open={showModal}
+        onClose={handleCloseModal}
+        aria-labelledby="activation-instructions-modal"
+        aria-describedby="activation-instructions-description"
+      >
+        <Box
+          sx={{
+            position: "absolute",
+            top: "50%",
+            left: "50%",
+            transform: "translate(-50%, -50%)",
+            width: 340,
+            bgcolor: "white",
+            borderRadius: "10px",
+            background: "#FFF",
+            outline: "none",
+            boxShadow: 24,
+            maxHeight: "90vh",
+            overflowY: "auto",
+            fontFamily: "Satoshi",
+            "&::-webkit-scrollbar": {
+              display: "none",
+            },
+          }}
+        >
+          <div className="flex items-center w-[100%] flex-col">
+            <div className="flex w-[90%] justify-between items-center  mt-5">
+              <div className="flex items-center"></div>
+              <div
+                onClick={handleCloseModal}
+                className="flex justify-center items-center border border-[#E5E8EE] w-[25px] h-[25px] rounded-[50%]"
+              >
+                <img className="w-[10px]" src={cross} />
+              </div>
+            </div>
+            <div className="w-[90%]">
+              <h2 className="text-[16px] font-bold mb-2">
+                How to activate this account
+              </h2>
+              <p className="text-[16px] font-[400] mb-2">
+                Step 1: Buy a medallion
+              </p>
+              <p className="text-[16px] font-[400] mb-2">
+                Step 2: Scan the medallion and select this account from the list
+              </p>
+              <p className="text-[16px] font-[400] mb-2">
+                Step 3: Share the link with family and friends
+              </p>
+            </div>
+            <br></br>
+          </div>
+        </Box>
+      </Modal>
     </>
   );
 }

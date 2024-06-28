@@ -4,7 +4,11 @@ import { FaRegEyeSlash } from "react-icons/fa";
 import { MdOutlineRemoveRedEye } from "react-icons/md";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import firebase from "firebase/compat/app";
-import { createUserWithEmailAndPassword } from "firebase/auth";
+import {
+  GoogleAuthProvider,
+  createUserWithEmailAndPassword,
+  signInWithPopup,
+} from "firebase/auth";
 import { auth, db, firebaseConfig } from "../Firebase/firebaseConfig";
 import { Slide, ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -16,6 +20,7 @@ import {
   ref,
   update,
 } from "firebase/database";
+import logo from "../images/logo.png";
 export default function Signup() {
   const { id } = useParams();
   const [showPassword, setShowPassword] = useState(true);
@@ -53,109 +58,129 @@ export default function Signup() {
     }
 
     if (email && password && id) {
-      const starCountRef = query(
-        ref(db, "/Tags"),
-        orderByChild("tagId"),
-        equalTo(id)
-      );
+      // Validate email format using regular expression
+      const emailRegEx =
+        /^[a-zA-Z][a-zA-Z0-9._%+-]*@[a-z0-9.-]+\.[a-z]{2,8}(.[a-z]{2,8})?$/;
 
-      onValue(starCountRef, async (snapshot) => {
-        const Tagdata = await snapshot.val();
-        if (Tagdata && typeof Tagdata === "object") {
-          const theTag = Object.values(Tagdata)?.[0];
-          if (theTag?.status === true && theTag?.userName) {
-            // toast.error("This tag is already associated to some other profile");
-            return;
-          }
+      if (!emailRegEx.test(email)) {
+        toast.error("Please enter a valid email");
+        return; // Exit the function if email format is invalid
+      }
+      const passwordRegEx = /^(?=.*[A-Z])(?=.*[!@#$%^&*])(?=.{8,})/;
+      if (!passwordRegEx.test(password)) {
+        toast.error(
+          "Password must be 8+ chars, include a special char and a capital letter"
+        );
+        return;
+      }
+      try {
+        const userCredential = await createUserWithEmailAndPassword(
+          auth,
+          email,
+          password
+        );
+        const user = userCredential.user;
 
-          // Validate email format using regular expression
-          const emailRegEx =
-            /^[a-zA-Z][a-zA-Z0-9._%+-]*@[a-z0-9.-]+\.[a-z]{2,8}(.[a-z]{2,8})?$/;
+        localStorage.removeItem("userId");
+        localStorage.setItem("userId", user?.uid);
 
-          if (!emailRegEx.test(email)) {
-            toast.error("Please enter a valid email");
-            return; // Exit the function if email format is invalid
-          }
-          const passwordRegEx = /^(?=.*[A-Z])(?=.*[!@#$%^&*])(?=.{8,})/;
-          if (!passwordRegEx.test(password)) {
-            toast.error(
-              "Password must be 8+ chars, include a special char and a capital letter"
-            );
-            return;
-          }
-          try {
-            const userCredential = await createUserWithEmailAndPassword(
-              auth,
-              email,
-              password
-            );
-            const user = userCredential.user;
+        await update(ref(db, `User/${user?.uid}`), {
+          firstName: firstName,
+          lastName: lastName,
+          id: user.uid,
+          email: email,
+          fcmToken: "",
+          profileImage: "",
+          state: "",
+          city: "",
+          muteNotificiation: "",
+          userName: firstName + user.uid,
+        }).then(() => {
+          update(ref(db, `Tags/${theTag?.id}`), {
+            status: true,
+            userName: firstName + user.uid,
+            userid: user.uid,
+          }).then(() => {
+            toast.success("User successfully created");
+            setTimeout(function () {
+              nevigate("/home");
+            }, 1500);
+          });
+        });
+      } catch (error) {
+        const errorCode = error.code;
+        console.error(error.message);
+        if (errorCode === "auth/invalid-email") {
+          toast.error("Please enter a valid email");
+        } else if (errorCode === "auth/email-already-in-use") {
+          toast.error("Email already exists");
+        } else if (errorCode === "auth/weak-password") {
+          toast.error("Password must be at least 8 characters");
+        }
+      }
+    } else {
+      toast.error("Tag not found");
+    }
+  };
 
-            localStorage.removeItem("userId");
-            localStorage.setItem("userId", user?.uid);
+  const provider = new GoogleAuthProvider();
 
-            await update(ref(db, `User/${user?.uid}`), {
-              firstName: firstName,
-              lastName: lastName,
-              id: user.uid,
-              email: email,
-              fcmToken: "",
-              profileImage: "",
+  const handleSignUpGoogle = () => {
+    signInWithPopup(auth, provider)
+      .then((response) => {
+        console.log(response, "this is the console of response");
+        localStorage.setItem("userId", response?.user?.uid);
+        // Query user data
+        const deviceRef = query(
+          ref(db, "/User"),
+          orderByChild("id"),
+          equalTo(response?.user?.uid)
+        );
+
+        onValue(deviceRef, (snapshot) => {
+          const userData = snapshot.val();
+          console.log(userData);
+
+          if (!userData) {
+            // User doesn't exist in database, create a new entry
+            set(ref(db, "User/" + response?.user?.uid), {
+              email: response?.user?.email,
+              id: response?.user?.uid,
+              firstName: response?.user?.displayName,
+              profileImage: response?.user?.photoURL,
               state: "",
+              fcmToken: "",
               city: "",
               muteNotificiation: "",
-              tagUid: id,
-              userName: firstName + user.uid,
-            }).then(() => {
-              update(ref(db, `Tags/${theTag?.id}`), {
-                status: true,
-                userName: firstName + user.uid,
-                userid: user.uid,
-              }).then(() => {
-                toast.success("User successfully created");
-                setTimeout(function () {
-                  nevigate("/home");
-                }, 1500);
-              });
             });
-          } catch (error) {
-            const errorCode = error.code;
-            console.error(error.message);
-            if (errorCode === "auth/invalid-email") {
-              toast.error("Please enter a valid email");
-            } else if (errorCode === "auth/email-already-in-use") {
-              toast.error("Email already exists");
-            } else if (errorCode === "auth/weak-password") {
-              toast.error("Password must be at least 8 characters");
-            }
           }
-        } else {
-          toast.error("Tag not found");
-        }
+        });
+
+        // Redirect to home page
+        // toast.success("Login successful");
+        setTimeout(() => {
+          nevigate("/home");
+        }, 2000);
+      })
+      .catch((error) => {
+        console.log(error.message);
       });
-    }
   };
 
   return (
     <>
       <div className="flex items-center justify-center flex-col w-[100%] min-h-[100vh] bg-[#f0f0f0]">
         <div className="flex justify-center items-center flex-col mt-10">
-          <div className="flex text-[#B08655] items-center">
-            <h1 className="font-[1000] text-[29px] m-0 Satoshi-bold ">
-              Eternal
-            </h1>
-            <img className="w-[13px] h-[15px] ml-1" src={img} alt="Logo" />
+          <div className="flex text-[#B08655]    items-center">
+            <img className="h-[39px] w-[206px] object-cover" src={logo} />
           </div>
-          <h1 className="font-[1000] text-[29px] m-[-9px] Satoshi-bold">
-            Sentiments
-          </h1>
         </div>
         <div className="w-[90%] rounded-[20px] bg-white flex justify-center mt-10 items-center flex-col">
           <h1 className="font-[1000] text-[24px] text-black mt-5 Satoshi-bold ">
             Register
           </h1>
           <h1 className="font-[60] text-[16px] text-black mt-2 ">
-            Create your Eternal Account
+            Create your Sentiments Account
           </h1>
           <input
             type="text"
@@ -226,6 +251,19 @@ export default function Signup() {
           >
             Register
           </button>
+          <div
+            className="w-[90%] cursor-pointer flex bg-[#062A27] Satoshi-bold text-white justify-between items-center outline-none border border-[#C9C9C9]  h-[45px] rounded-[30px] pl-1 mt-3"
+            onClick={() => handleSignUpGoogle()}
+          >
+            <img
+              width="35"
+              height="35"
+              src="https://img.icons8.com/color/96/google-logo.png"
+              alt="google-logo"
+            />
+            <div>Login with google</div>
+            <p className="w-[10%]"></p>
+          </div>
           <p className="mt-3 text-[16px] mb-5">
             Already have an account?{" "}
             <Link

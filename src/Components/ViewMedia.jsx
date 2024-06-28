@@ -35,6 +35,7 @@ export default function ViewMedia({
   imageData,
   videoData,
   audioData,
+  id,
 }) {
   const [slide, setSlide] = useState(false);
   const [singleImage, setSingleImage] = useState();
@@ -49,7 +50,6 @@ export default function ViewMedia({
   const [tempCmt, setTempCmt] = useState([]);
   const userId = localStorage.getItem("userId");
   const navigate = useNavigate();
-  const { id } = useParams();
 
   const handleSlide = (imageData) => {
     setSlide(true);
@@ -63,9 +63,9 @@ export default function ViewMedia({
     setTempCmt([]);
   };
   const [cmntTimeStamp, setCmntTimeStamp] = useState("");
-  const handleClick = (event,timeStamp) => {
+  const handleClick = (event, timeStamp) => {
     setAnchorEl(event.currentTarget);
-    setCmntTimeStamp(timeStamp)
+    setCmntTimeStamp(timeStamp);
   };
 
   const handleClose = () => {
@@ -92,7 +92,7 @@ export default function ViewMedia({
 
   const handleAddComment = (comment) => {
     if (comment.comment && comment.name) {
-      setTempCmt([...tempCmt,comment]);
+      setTempCmt([...tempCmt, comment]);
       const profileRef = ref(
         db,
         `/Profile/${id}/imageMedia/${singleImage?.id}`
@@ -112,8 +112,8 @@ export default function ViewMedia({
         })
         .then(() => {
           toast.success("Comment added successfully");
-           setTimeout(function () {
-          handleSlideClose();
+          setTimeout(function () {
+            handleSlideClose();
           }, 1500);
           setText("");
           setName("");
@@ -129,42 +129,45 @@ export default function ViewMedia({
   const handleOnEnter = (text) => {
     // Add any necessary functionality here
   };
-    const currentUser = localStorage.getItem("userId");
-     
-           let updateCmnt = () => {
-            if (tempCmt?.length > 2) {
-              setTempCmt([]);
-              handleSlideClose();
-            }
-          };
-          
-const handleDeleteCmnt = (timeStamp) => {
-  const postRef = ref(db, `Profile/${id}/imageMedia/${singleImage?.id}/comments`);
-  get(postRef)
-    .then((snapshot) => {
+  const currentUser = localStorage.getItem("userId");
+
+  let updateCmnt = () => {
+    if (tempCmt?.length > 2) {
+      setTempCmt([]);
+      handleSlideClose();
+    }
+  };
+
+  const handleDeleteCmnt = (timeStamp) => {
+    const postRef = ref(
+      db,
+      `Profile/${id}/imageMedia/${singleImage?.id}/comments`
+    );
+    get(postRef).then((snapshot) => {
       const posts = snapshot.val();
- 
-   if (posts) {
-              let remainingComnt = posts.filter((elm) => {
-                return elm.timeStamp != timeStamp;
-              });
-          
-              set(ref(db, `Profile/${id}/imageMedia/${singleImage?.id}/comments`), remainingComnt).then(() => {
-                 
-        
+
+      if (posts) {
+        let remainingComnt = posts.filter((elm) => {
+          return elm.timeStamp != timeStamp;
+        });
+
+        set(
+          ref(db, `Profile/${id}/imageMedia/${singleImage?.id}/comments`),
+          remainingComnt
+        ).then(() => {
           let remainingComments = comments.filter((elm) => {
-                return elm.timeStamp != timeStamp;
-              });
-              setComments(remainingComments)
-                let remainingtmp = tempCmt.filter((elm) => {
-                return elm.timeStamp != timeStamp;
-              });
-              console.log(remainingtmp)
-              setTempCmt(remainingtmp)
-              });
-            }
+            return elm.timeStamp != timeStamp;
+          });
+          setComments(remainingComments);
+          let remainingtmp = tempCmt.filter((elm) => {
+            return elm.timeStamp != timeStamp;
+          });
+          console.log(remainingtmp);
+          setTempCmt(remainingtmp);
+        });
+      }
     });
-};
+  };
 
   return (
     <>
@@ -342,7 +345,7 @@ const handleDeleteCmnt = (timeStamp) => {
             <p className="text-[#062A27] mt-5 w-[100%] p-2 flex justify-center items-center border-t border-b border-[#D4E2E2]">
               COMMENTS
             </p>
-         
+
             {comments.length == 0 && tempCmt.length === 0 && (
               <div className="w-[100%] flex justify-center items-center flex-col mt-5 ">
                 <img className="w-[60px]" src={comnt} />
@@ -356,36 +359,41 @@ const handleDeleteCmnt = (timeStamp) => {
             )}
 
             <div className="flex  items-center flex-col sm:h-[160px] h-[250px] overflow-y-scroll w-[90%] mt-5 ">
-              {tempCmt.map((tempCmt, index) => (
-      tempCmt.comment && tempCmt.name && (
-        <div key={index} className="w-[100%] flex flex-col items-center">
-          <div className="flex justify-between items-center w-[100%]">
-            <div className="flex items-center">
-              <img
-                className="w-[40px] h-[40px] object-cover rounded-[50%]"
-                src={user}
-                alt={tempCmt.name}
-              />
-              <p className="text-[16px] font-bold Satoshi-bold ml-3 text-[#062A27]">
-                {tempCmt.name}
-              </p>
-              <GoDotFill className="text-[#5F6161] ml-2" />
-              <p className="text-[#5F6161] ml-2">{tempCmt.date}</p>
-            </div>
-            <FiMoreVertical
-              onClick={handleClick}
-              className="text-[#5F6161] text-[20px] font-bold"
-            />
-          </div>
+              {tempCmt.map(
+                (tempCmt, index) =>
+                  tempCmt.comment &&
+                  tempCmt.name && (
+                    <div
+                      key={index}
+                      className="w-[100%] flex flex-col items-center"
+                    >
+                      <div className="flex justify-between items-center w-[100%]">
+                        <div className="flex items-center">
+                          <img
+                            className="w-[40px] h-[40px] object-cover rounded-[50%]"
+                            src={user}
+                            alt={tempCmt.name}
+                          />
+                          <p className="text-[16px] font-bold Satoshi-bold ml-3 text-[#062A27]">
+                            {tempCmt.name}
+                          </p>
+                          <GoDotFill className="text-[#5F6161] ml-2" />
+                          <p className="text-[#5F6161] ml-2">{tempCmt.date}</p>
+                        </div>
+                        <FiMoreVertical
+                          onClick={handleClick}
+                          className="text-[#5F6161] text-[20px] font-bold"
+                        />
+                      </div>
 
-          <div className="w-[100%] flex items-center">
-            <p className="ml-[50px] text-[#5F6161] text-[14px] ">
-              {tempCmt.comment}
-            </p>
-          </div>
-        </div>
-      )
-    ))}
+                      <div className="w-[100%] flex items-center">
+                        <p className="ml-[50px] text-[#5F6161] text-[14px] ">
+                          {tempCmt.comment}
+                        </p>
+                      </div>
+                    </div>
+                  )
+              )}
 
               {comments.map((item, index) => (
                 <div
@@ -408,12 +416,12 @@ const handleDeleteCmnt = (timeStamp) => {
                       <GoDotFill className="text-[#5F6161] ml-2" />
                       <p className="text-[#5F6161] ml-2">{item.date}</p>
                     </div>
-                    {currentUser &&
-                    <FiMoreVertical
-                     onClick={(e) => handleClick(e, item.timeStamp)} 
-                      className="text-[#5F6161] text-[20px] font-bold"
-                    />
-}
+                    {currentUser && (
+                      <FiMoreVertical
+                        onClick={(e) => handleClick(e, item.timeStamp)}
+                        className="text-[#5F6161] text-[20px] font-bold"
+                      />
+                    )}
                   </div>
 
                   <div className="w-[100%] flex items-center">
@@ -465,7 +473,7 @@ const handleDeleteCmnt = (timeStamp) => {
           </div>
         </div>
       </Slide>
-       <Menu
+      <Menu
         id="fade-menu"
         anchorEl={anchorEl}
         keepMounted
@@ -473,18 +481,24 @@ const handleDeleteCmnt = (timeStamp) => {
         onClose={handleClose}
         TransitionComponent={Fade}
         anchorOrigin={{
-          vertical: 'bottom',
-          horizontal: 'center',
+          vertical: "bottom",
+          horizontal: "center",
         }}
         transformOrigin={{
-          vertical: 'top',
-          horizontal: 'right',
+          vertical: "top",
+          horizontal: "right",
         }}
         getContentAnchorEl={null}
       >
-        <MenuItem onClick={() => { handleDeleteCmnt(cmntTimeStamp); handleClose(); }}  className='flex items-center'>
-          <img className='w-[20px] mr-3' src={delet} alt="delete" />
-          <p className='text-[red]'>Delete comment</p>
+        <MenuItem
+          onClick={() => {
+            handleDeleteCmnt(cmntTimeStamp);
+            handleClose();
+          }}
+          className="flex items-center"
+        >
+          <img className="w-[20px] mr-3" src={delet} alt="delete" />
+          <p className="text-[red]">Delete comment</p>
         </MenuItem>
       </Menu>
     </>
