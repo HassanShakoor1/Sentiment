@@ -140,6 +140,10 @@ export default function CreatenewProfile({ handleback, bio, toast }) {
   };
   const nevigate = useNavigate();
   const handleSubmit = async () => {
+    if(!lastName && !firstName){
+      toast.error("First name or last name is required")
+      return;
+    }
     setBTnloader(true);
     const getCurrentDate = () => {
       const currentDate = new Date();

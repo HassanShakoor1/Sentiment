@@ -20,10 +20,20 @@ function App() {
     return currentUser?.length > 0 && currentUser != undefined ? (
       children
     ) : (
-      <Navigate to="/login" />
+      <Navigate to="/" />
     );
   };
-
+  const RequireAuthhome = ({ children }) => {
+    const currentUser = localStorage.getItem("userId");
+  
+    // If currentUser is found, redirect to "/create"
+    if (currentUser) {
+      return <Navigate to="/home" />;
+    }
+  
+    // If no currentUser, render the children components
+    return children;
+  };
   return (
     <>
       <Router>
@@ -31,7 +41,7 @@ function App() {
           <div className="screen">
             <Routes>
               <Route path="/signup" element={<Signup />} />
-              <Route path="/" element={<Login />} />
+              <Route path="/" element={<RequireAuthhome><Login /></RequireAuthhome>} />
               <Route path="/forgot" element={<Forgotpassword />} />
               <Route path="/newpassword" element={<CreatenewPassword />} />
               <Route path="/qr/:id" element={<Qr />} />

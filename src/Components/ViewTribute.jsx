@@ -7,6 +7,7 @@ import { GoDotFill, GoHeart } from "react-icons/go";
 import { RiShareForwardLine } from "react-icons/ri";
 import chat from "../images/Chat (1).png";
 import send from "../images/Send message.png";
+import profile1 from "../images/Group 661 (2).png";
 import delet from "../images/Delete Bin 4.png";
 import user from "../images/Ellipse 2723 (1).png";
 import {
@@ -332,7 +333,12 @@ export default function ViewTribute({ userViewProfile, id }) {
       return text?.slice(0, maxLength) + "...";
     }
   }
+const handleRemoveImage = () => {
+    setInputValue(""); 
+    
 
+  };
+  console.log(inputValue)
   return (
     <>
       <div className="flex justify-center items-center flex-col w-[100%] mt-5">
@@ -368,7 +374,7 @@ export default function ViewTribute({ userViewProfile, id }) {
               <div className="flex items-center w-[100%]">
                 <img
                   className="w-[40px] h-[40px] object-cover rounded-[50%]"
-                  src={adminData?.profileImage}
+                  src={adminData?.profileImage?adminData?.profileImage:profile1}
                   alt={item?.title}
                 />
                 <p className="text-[16px] font-bold Satoshi-bold ml-3 text-[#062A27]">
@@ -603,7 +609,7 @@ export default function ViewTribute({ userViewProfile, id }) {
             <div className="flex  items-center mt-5 w-[90%]">
               <img
                 className="w-[40px] h-[40px] object-cover rounded-[50%]"
-                src={userViewProfile?.userProfile}
+                src={userViewProfile?.userProfile?userViewProfile?.userProfile:profile1}
               />
               <p className="text-[16px] font-bold Satoshi-bold ml-3 text-[#062A27]">
                 {userViewProfile?.firstName}
@@ -663,6 +669,19 @@ export default function ViewTribute({ userViewProfile, id }) {
                   Choose File
                 </button>
               </div>
+                {inputValue?.name && (
+    <p className='mt-2 font-bold'>Selected Image:</p>
+)}
+{inputValue?.name && (
+    <>
+        <img src={URL.createObjectURL(inputValue)} alt="Event Preview" style={{ maxWidth: '100%', marginTop: '10px' }} />
+        <button
+            onClick={handleRemoveImage}
+            className='mt-2 bg-red-500  rounded-[30px] h-[45px]  w-[100%] font-[600] text-[16px] cursor-pointer text-white'>
+            Remove Image
+        </button>
+    </>
+)}
               <div className="flex justify-center items-center w-[100%]">
                 <p className="text-[14px] text-[#040A1B] mt-2">
                   Drag to upload photo
