@@ -53,9 +53,9 @@ export default function ViewProfile() {
     setSlide(false);
   };
 
-  const [timeline, setfavorites] = useState(true);
+  const [timeline, setfavorites] = useState(false);
   const [bio, setpost] = useState(false);
-  const [media, setMedallions] = useState(false);
+  const [media, setMedallions] = useState(true);
   const [tributes, setTributes] = useState(false);
   const [destails, setDetails] = useState(false);
 
@@ -162,7 +162,7 @@ export default function ViewProfile() {
         const thedata = Object.values(data)?.[0];
         console.log(Object.values(data)?.[0]);
 
-        if (thedata && thedata?.status != "Unverified") {
+        if (thedata) {
           setUserdata(thedata);
           dispatch(setViewProfile(thedata));
           if (thedata?.timeline) {
@@ -201,7 +201,7 @@ export default function ViewProfile() {
             const thedata = Object.values(data)?.[0];
             console.log(Object.values(data)?.[0]);
 
-            if (thedata && thedata?.userId === admin) {
+            if (thedata) {
               setUserdata(thedata);
               dispatch(setViewProfile(thedata));
               if (thedata?.timeline) {
@@ -266,9 +266,11 @@ export default function ViewProfile() {
               onValue(tagTableRef, async (snapshot) => {
                 const data = await snapshot.val();
                 if (data) {
-                  navigate(`/assign/${id}`);
+                  navigate(`/home`);
+                  sessionStorage.setItem("tempTag", id);
                 } else {
                   navigate("/");
+                  sessionStorage.setItem("tempTag", id);
                 }
               });
             }
@@ -276,9 +278,11 @@ export default function ViewProfile() {
             onValue(tagTableRef, async (snapshot) => {
               const data = await snapshot.val();
               if (data) {
-                navigate(`/assign/${id}`);
+                navigate(`/home`);
+                sessionStorage.setItem("tempTag", id);
               } else {
                 navigate("/");
+                sessionStorage.setItem("tempTag", id);
               }
             });
           }
@@ -293,6 +297,25 @@ export default function ViewProfile() {
   const showSuccessToast = (message) => {
     toast.dismiss();
     toast.success(message);
+  };
+  const shareUrl = window.location.href;
+  const handleShare = async () => {
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: "Share your Sentiments profile",
+          text: `I wanted to share something meaningful with you all I've recently created a Memorial on Sentiments for our beloved ${
+            userViewProfile?.firstName + " " + userViewProfile?.lastName
+          }, and I would be deeply grateful if you could take a moment to share any memories or anecdotes you have of them. You contributions will help us honour their memory and keep their spirit alive in our hearts.`,
+          url: shareUrl,
+        });
+        console.log("Content shared successfully");
+      } catch (error) {
+        console.error("Error sharing content:", error);
+      }
+    } else {
+      alert("Web Share API is not supported in your browser.");
+    }
   };
 
   console.log(userViewProfile);
@@ -320,9 +343,9 @@ export default function ViewProfile() {
           </div>
         </div>
         <div className="flex  items-center flex-col w-[90%] rounded-[22px] mt-5  bg-white">
-          <div className="w-[100%] flex justify-center items-center relative ">
+          <div className="w-[100%] h-[216px] flex justify-center items-center relative ">
             <img
-              className="rounded-[10px] w-[100%] h-[100%] "
+              className="rounded-[10px] w-[100%] h-[100%]"
               src={
                 userViewProfile?.coverImage
                   ? userViewProfile?.coverImage
@@ -361,7 +384,7 @@ export default function ViewProfile() {
               </div>
             )}
             <div
-              onClick={handleopenshare}
+              onClick={handleShare}
               className="border ml-3 flex justify-center items-center border-[#E5D6C5] bg-white w-[30px] h-[30px] rounded-[50%]"
             >
               <RiShareForwardLine className="text-[#062A27] text-[20px]" />
@@ -503,9 +526,7 @@ export default function ViewProfile() {
             </div>
           </div>
           <div className="flex justify-center items-center mt-2 w-[100%]">
-            <Share
-            toast={toast}
-            />
+            <Share toast={toast} />
           </div>
           <br></br>
         </Box>

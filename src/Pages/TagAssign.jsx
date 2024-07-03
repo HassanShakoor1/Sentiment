@@ -11,6 +11,8 @@ import { db } from "../Firebase/firebaseConfig";
 import profile1 from "../images/Group 661 (2).png";
 import { useNavigate, useParams } from "react-router-dom";
 import { IoIosArrowBack } from "react-icons/io";
+import { Slide, ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const TagAssign = () => {
   const { tag } = useParams();
@@ -99,6 +101,8 @@ const TagAssign = () => {
               });
             });
           }
+        } else {
+          toast.error("This tag is already assigned to someone else");
         }
       }
     });
@@ -203,6 +207,20 @@ const TagAssign = () => {
           </div>
         </div>
       )}
+
+      <ToastContainer
+        position="top-center"
+        autoClose={2000} // Auto close after 3 seconds
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        transition={Slide}
+        toastClassName="custom-toast"
+      />
     </div>
   );
 };

@@ -114,6 +114,7 @@ export default function ViewTribute({ userViewProfile, id }) {
   const [tributeData, setTributeData] = useState({
     title: "",
     description: "",
+    userName: "",
   });
   const [commentData, setCommentData] = useState({
     firstName: "",
@@ -123,6 +124,11 @@ export default function ViewTribute({ userViewProfile, id }) {
 
   const addTribute = async () => {
     if (tributeData.title && tributeData.description) {
+      if (!admin && !tributeData?.userName) {
+        toast.error("Your name is required");
+        return;
+      }
+
       let name = new Date().getTime() + inputValue.name;
       const storageRef = sRef(storage, name);
       uploadBytes(storageRef, inputValue)
@@ -137,7 +143,17 @@ export default function ViewTribute({ userViewProfile, id }) {
                 profileId: id,
                 timeStamp: new Date().toISOString(),
               }).key;
-              update(ref(db, `tributes/${pushkey}`), { id: pushkey });
+              update(ref(db, `tributes/${pushkey}`), { id: pushkey }).then(
+                () => {
+                  toast.success("New tribute created successfuly");
+                  setTributeData({
+                    title: "",
+                    description: "",
+                    userName: "",
+                  });
+                  handleclose();
+                }
+              );
             })
             .catch((error) => {
               console.log(error);
@@ -147,12 +163,6 @@ export default function ViewTribute({ userViewProfile, id }) {
         .catch((error) => {
           console.log(error);
         });
-      toast.success("New tribute created successfuly");
-      setTributeData({
-        title: "",
-        description: "",
-      });
-      handleclose();
     } else {
       toast.error("All fields are required");
     }
@@ -333,12 +343,10 @@ export default function ViewTribute({ userViewProfile, id }) {
       return text?.slice(0, maxLength) + "...";
     }
   }
-const handleRemoveImage = () => {
-    setInputValue(""); 
-    
-
+  const handleRemoveImage = () => {
+    setInputValue("");
   };
-  console.log(inputValue)
+  console.log(adminData);
   return (
     <>
       <div className="flex justify-center items-center flex-col w-[100%] mt-5">
@@ -355,15 +363,15 @@ const handleRemoveImage = () => {
           transition={Slide}
           toastClassName="custom-toast"
         />
-        {admin && (
-          <button
-            onClick={handleopen}
-            className="bg-[#062A27] rounded-[30px] flex border border-[#B08655] justify-center items-center h-[45px] mt-3 w-[90%] font-[500] text-[16px] cursor-pointer text-white"
-          >
-            <FaPlus className="mr-2" />
-            Post a Tribute
-          </button>
-        )}
+        {/* {admin && ( */}
+        <button
+          onClick={handleopen}
+          className="bg-[#062A27] rounded-[30px] flex border border-[#B08655] justify-center items-center h-[45px] mt-3 w-[90%] font-[500] text-[16px] cursor-pointer text-white"
+        >
+          <FaPlus className="mr-2" />
+          Post a Tribute
+        </button>
+        {/* // )} */}
         <div className="flex items-center flex-col w-[90%] mt-5">
           {tributes?.map((item, i) => (
             <div
@@ -374,11 +382,17 @@ const handleRemoveImage = () => {
               <div className="flex items-center w-[100%]">
                 <img
                   className="w-[40px] h-[40px] object-cover rounded-[50%]"
-                  src={adminData?.profileImage?adminData?.profileImage:profile1}
+                  src={
+                    adminData?.profileImage && !item?.userName
+                      ? adminData?.profileImage
+                      : profile1
+                  }
                   alt={item?.title}
                 />
                 <p className="text-[16px] font-bold Satoshi-bold ml-3 text-[#062A27]">
-                  {adminData.firstName} {adminData.lastName}
+                  {item?.userName
+                    ? item?.userName
+                    : adminData?.firstName + " " + adminData?.lastName}
                 </p>
                 <GoDotFill className="text-[#5F6161] ml-2" />
                 <p className="text-[#5F6161] ml-2">
@@ -606,17 +620,36 @@ const handleRemoveImage = () => {
                 <img className="w-[10px]" src={cross} />
               </div>
             </div>
+
             <div className="flex  items-center mt-5 w-[90%]">
               <img
                 className="w-[40px] h-[40px] object-cover rounded-[50%]"
-                src={userViewProfile?.userProfile?userViewProfile?.userProfile:profile1}
+                src={
+                  userViewProfile?.userProfile
+                    ? userViewProfile?.userProfile
+                    : profile1
+                }
               />
               <p className="text-[16px] font-bold Satoshi-bold ml-3 text-[#062A27]">
-                {userViewProfile?.firstName}
-                {userViewProfile?.lastName}
+                {userViewProfile?.firstName + " " + userViewProfile?.lastName}
               </p>
             </div>
-            <div className="flex justify-start flex-col w-[90%] mt-5">
+
+            {!admin && (
+              <div className="flex justify-start flex-col w-[90%] mt-3">
+                <label className="mb-1">Your name</label>
+                <input
+                  type="text"
+                  className="w-[100%] outline-none border border-[#DCE5E5] h-[40px]  rounded-[5px] pl-3 pr-3"
+                  onChange={(e) =>
+                    setTributeData({ ...tributeData, userName: e.target.value })
+                  }
+                  value={tributeData?.userName}
+                />
+              </div>
+            )}
+
+            <div className="flex justify-start flex-col w-[90%] mt-3">
               <label className="mb-1">Title</label>
               <input
                 type="text"
@@ -627,7 +660,8 @@ const handleRemoveImage = () => {
                 value={tributeData?.title}
               />
             </div>
-            <div className="flex justify-start flex-col w-[90%] mt-5">
+
+            <div className="flex justify-start flex-col w-[90%] mt-3">
               <label className="mb-1">Description</label>
               <textarea
                 type="text"
@@ -669,19 +703,24 @@ const handleRemoveImage = () => {
                   Choose File
                 </button>
               </div>
-                {inputValue?.name && (
-    <p className='mt-2 font-bold'>Selected Image:</p>
-)}
-{inputValue?.name && (
-    <>
-        <img src={URL.createObjectURL(inputValue)} alt="Event Preview" style={{ maxWidth: '100%', marginTop: '10px' }} />
-        <button
-            onClick={handleRemoveImage}
-            className='mt-2 bg-red-500  rounded-[30px] h-[45px]  w-[100%] font-[600] text-[16px] cursor-pointer text-white'>
-            Remove Image
-        </button>
-    </>
-)}
+              {inputValue?.name && (
+                <p className="mt-2 font-bold">Selected Image:</p>
+              )}
+              {inputValue?.name && (
+                <>
+                  <img
+                    src={URL.createObjectURL(inputValue)}
+                    alt="Event Preview"
+                    style={{ maxWidth: "100%", marginTop: "10px" }}
+                  />
+                  <button
+                    onClick={handleRemoveImage}
+                    className="mt-2 bg-red-500  rounded-[30px] h-[45px]  w-[100%] font-[600] text-[16px] cursor-pointer text-white"
+                  >
+                    Remove Image
+                  </button>
+                </>
+              )}
               <div className="flex justify-center items-center w-[100%]">
                 <p className="text-[14px] text-[#040A1B] mt-2">
                   Drag to upload photo

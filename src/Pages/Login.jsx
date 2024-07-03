@@ -166,7 +166,7 @@ export default function Login() {
               src="https://img.icons8.com/color/96/google-logo.png"
               alt="google-logo"
             />
-            <div>Login with google</div>
+            <div>Log In with Google</div>
             <p className="w-[10%]"></p>
           </div>
           <p className="mt-3 text-[16px] mb-5">

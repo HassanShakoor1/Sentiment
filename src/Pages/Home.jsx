@@ -22,7 +22,7 @@ import { RiSubtractLine } from "react-icons/ri";
 import { getDownloadURL, uploadString, ref as sRef } from "firebase/storage";
 import { Box, Button, Modal, Typography } from "@mui/material";
 import { IoClose } from "react-icons/io5";
-import { ClipLoader } from "react-spinners";
+import { ClipLoader, FadeLoader } from "react-spinners";
 import "../App.css";
 import { useDispatch, useSelector } from "react-redux";
 import { setUser } from "../Redux/userSlice";
@@ -88,7 +88,9 @@ export default function Home() {
 
   let currentUser = localStorage.getItem("userId");
   let [userData, setUserdata] = useState({});
+  const [loading, setloading] = useState(true);
   const getSingleChild = () => {
+    setloading(true);
     const starCountRef = ref(db, `User/${currentUser}`);
 
     onValue(starCountRef, async (snapshot) => {
@@ -96,6 +98,7 @@ export default function Home() {
       console.log(data);
       console.log("testing data");
       setUserdata(data);
+      setloading(false);
     });
   };
   useEffect(() => {
@@ -212,7 +215,11 @@ export default function Home() {
     setisModalOpen(false);
   };
 
-  return (
+  return loading ? (
+    <div className="w-[100%] h-[100vh] flex justify-center  items-center ">
+      <FadeLoader color="#062A27" />
+    </div>
+  ) : (
     <>
       <Cropper
         cropModal={cropModal}

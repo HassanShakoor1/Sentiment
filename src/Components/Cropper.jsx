@@ -1,7 +1,8 @@
 import { Box, Modal } from "@mui/material";
 import React from "react";
-import { ReactCrop } from "react-image-crop";
-import 'react-image-crop/dist/ReactCrop.css'
+import ReactCrop from "react-image-crop";
+import "react-image-crop/dist/ReactCrop.css";
+
 const Cropper = ({
   cropModal,
   handleclosecropper,
@@ -12,26 +13,21 @@ const Cropper = ({
   crop,
   aspect,
   setReduxState,
-  isSettings,
   isCircle,
-  isgroup,
-  handleFormSubmit
-
+  handleFormSubmit,
 }) => {
-
-
   const getProfileCropImage = async () => {
-    handleFormSubmit()
+    handleFormSubmit();
+
     const canvas = document.createElement("canvas");
     const scaleX = myimg.naturalWidth / myimg.width;
     const scaleY = myimg.naturalHeight / myimg.height;
-    canvas.width = crop.width;
-    canvas.height = crop.height;
+    const pixelRatio = window.devicePixelRatio;
+
+    canvas.width = crop.width * scaleX * pixelRatio;
+    canvas.height = crop.height * scaleY * pixelRatio;
     const ctx = canvas.getContext("2d");
 
-    const pixelRatio = window.devicePixelRatio;
-    canvas.width = crop.width * pixelRatio;
-    canvas.height = crop.height * pixelRatio;
     ctx.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0);
     ctx.imageSmoothingQuality = "high";
 
@@ -43,39 +39,35 @@ const Cropper = ({
       crop.height * scaleY,
       0,
       0,
-      crop.width,
-      crop.height
+      canvas.width,
+      canvas.height
     );
 
-    // Converting to base64
-    const base64Image = canvas.toDataURL("image/jpeg");
-    // setprofileImagePath(base64Image)
-   
-      setReduxState(base64Image);
-  
-
-    // setOutput(base64Image);
-    // setsaveImageIcon(true)
-    handleclosecropper();
+    canvas.toBlob(
+      (blob) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(blob);
+        reader.onloadend = () => {
+          const base64Image = reader.result;
+          setReduxState(base64Image);
+          handleclosecropper();
+        };
+      },
+      "image/jpeg",
+      1
+    );
   };
- 
-
 
   const style2 = {
     position: "absolute",
     top: "50%",
     left: "50%",
     transform: "translate(-50%, -50%)",
-    // width: "100%",
     display: "flex",
     flexDirection: "column",
     alignItems: "center",
-    zIndex:30,
+    zIndex: 30,
     width: "300px",
-    // bgcolor: 'background.paper',
-    // border: '2px solid #000',
-    // boxShadow: 24,
-    // p: 2,
   };
 
   return (
@@ -89,22 +81,12 @@ const Cropper = ({
         <Box sx={style2}>
           <ReactCrop
             crop={crop}
-            onChange={(c) => {
-              setcrop(c);
-            }}
+            onChange={(c) => setcrop(c)}
             circularCrop={isCircle}
             aspect={aspect}
-            style={{ maxHeight: '450px' }} 
+            style={{ maxHeight: "450px" }}
           >
-            <img
-              src={theimg}
-              alt="img"
-              onLoad={(e) => setmyimg(e.target)}
-              style={{
-               
-                // objectFit: "contain",
-              }}
-            />
+            <img src={theimg} alt="img" onLoad={(e) => setmyimg(e.target)} />
           </ReactCrop>
           <div
             style={{
@@ -115,7 +97,7 @@ const Cropper = ({
             }}
           >
             <button
-              onClick={() => handleclosecropper()}
+              onClick={handleclosecropper}
               style={{
                 backgroundColor: "white",
                 outline: "none",
@@ -127,12 +109,11 @@ const Cropper = ({
                 borderRadius: "20px",
                 cursor: "pointer",
               }}
-              className="hover: bg-gray-500"
             >
               Cancel
             </button>
             <button
-              onClick={() => getProfileCropImage()}
+              onClick={getProfileCropImage}
               style={{
                 backgroundColor: "black",
                 outline: "none",

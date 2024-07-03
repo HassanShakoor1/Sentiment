@@ -93,12 +93,11 @@ export default function Editprofile() {
   };
   const nevigate = useNavigate();
   const handleNavigateview = (user) => {
-    if(user?.status==="Verified"&& user?.tagId){
+    if (user?.status === "Verified" && user?.tagId) {
       nevigate(`/viewprofile/${user?.tagId}`);
-    }else{
+    } else {
       nevigate(`/viewprofile/${user?.id}`);
     }
-   
   };
   let [slide, setSlide] = useState();
   let handleslide = () => {
@@ -478,7 +477,7 @@ export default function Editprofile() {
               />
             </label>
             <img
-              className="rounded-[10px] w-[100%] h-[100%] "
+              className="rounded-[10px] w-[100%]"
               src={userProfile?.coverImage ? userProfile?.coverImage : cover}
             />
             <div className=" flex justify-center items-center  w-[100%]  absolute bottom-[-60px] ">
@@ -539,7 +538,7 @@ export default function Editprofile() {
               ? ""
               : userProfile?.deathDate}{" "}
           </h1>
-          <p
+          {/* <p
             className={`font-bold text-[16px] flex items-center ${
               userProfile?.status === "Verified"
                 ? "text-[#3F9A55]"
@@ -550,7 +549,7 @@ export default function Editprofile() {
               Profile Status:
             </p>{" "}
             {userProfile?.status}
-          </p>
+          </p> */}
           <div className="w-[100%] flex justify-center items-center mt-3">
             <button
               onClick={() => handleNavigateview(userProfile)}
@@ -560,14 +559,14 @@ export default function Editprofile() {
               <img className="w-[18px] mr-2" src={eye} />
               Public View
             </button>
-            {userProfile?.status != "Verified" && (
+            {/* {userProfile?.status != "Verified" && (
               <button
                 onClick={handlestatus}
                 className="border-[#062A27] border text-[#062A27]  rounded-[30px] w-[120px] h-[35px] flex justify-center items-center text-[13px]"
               >
                 Status Info
               </button>
-            )}
+            )} */}
             <div
               onClick={handleClick}
               className="border flex justify-center items-center border-[#062A27] ml-2 bg-white w-[35px] h-[35px] rounded-[50%]"

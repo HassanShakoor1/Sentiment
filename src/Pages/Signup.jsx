@@ -57,69 +57,59 @@ export default function Signup() {
       return;
     }
 
-    if (email && password && id) {
-      // Validate email format using regular expression
-      const emailRegEx =
-        /^[a-zA-Z][a-zA-Z0-9._%+-]*@[a-z0-9.-]+\.[a-z]{2,8}(.[a-z]{2,8})?$/;
+    // Validate email format using regular expression
+    const emailRegEx =
+      /^[a-zA-Z][a-zA-Z0-9._%+-]*@[a-z0-9.-]+\.[a-z]{2,8}(.[a-z]{2,8})?$/;
 
-      if (!emailRegEx.test(email)) {
+    if (!emailRegEx.test(email)) {
+      toast.error("Please enter a valid email");
+      return; // Exit the function if email format is invalid
+    }
+    const passwordRegEx = /^(?=.*[A-Z])(?=.*[!@#$%^&*])(?=.{8,})/;
+    if (!passwordRegEx.test(password)) {
+      toast.error(
+        "Password must be 8+ chars, include a special char and a capital letter"
+      );
+      return;
+    }
+    try {
+      const userCredential = await createUserWithEmailAndPassword(
+        auth,
+        email,
+        password
+      );
+      const user = userCredential.user;
+
+      localStorage.removeItem("userId");
+      localStorage.setItem("userId", user?.uid);
+
+      await update(ref(db, `User/${user?.uid}`), {
+        firstName: firstName,
+        lastName: lastName,
+        id: user.uid,
+        email: email,
+        fcmToken: "",
+        profileImage: "",
+        state: "",
+        city: "",
+        muteNotificiation: "",
+        userName: firstName + user.uid,
+      }).then(() => {
+        toast.success("User successfully created");
+        setTimeout(function () {
+          nevigate("/home");
+        }, 1500);
+      });
+    } catch (error) {
+      const errorCode = error.code;
+      console.error(error.message);
+      if (errorCode === "auth/invalid-email") {
         toast.error("Please enter a valid email");
-        return; // Exit the function if email format is invalid
+      } else if (errorCode === "auth/email-already-in-use") {
+        toast.error("Email already exists");
+      } else if (errorCode === "auth/weak-password") {
+        toast.error("Password must be at least 8 characters");
       }
-      const passwordRegEx = /^(?=.*[A-Z])(?=.*[!@#$%^&*])(?=.{8,})/;
-      if (!passwordRegEx.test(password)) {
-        toast.error(
-          "Password must be 8+ chars, include a special char and a capital letter"
-        );
-        return;
-      }
-      try {
-        const userCredential = await createUserWithEmailAndPassword(
-          auth,
-          email,
-          password
-        );
-        const user = userCredential.user;
-
-        localStorage.removeItem("userId");
-        localStorage.setItem("userId", user?.uid);
-
-        await update(ref(db, `User/${user?.uid}`), {
-          firstName: firstName,
-          lastName: lastName,
-          id: user.uid,
-          email: email,
-          fcmToken: "",
-          profileImage: "",
-          state: "",
-          city: "",
-          muteNotificiation: "",
-          userName: firstName + user.uid,
-        }).then(() => {
-          update(ref(db, `Tags/${theTag?.id}`), {
-            status: true,
-            userName: firstName + user.uid,
-            userid: user.uid,
-          }).then(() => {
-            toast.success("User successfully created");
-            setTimeout(function () {
-              nevigate("/home");
-            }, 1500);
-          });
-        });
-      } catch (error) {
-        const errorCode = error.code;
-        console.error(error.message);
-        if (errorCode === "auth/invalid-email") {
-          toast.error("Please enter a valid email");
-        } else if (errorCode === "auth/email-already-in-use") {
-          toast.error("Email already exists");
-        } else if (errorCode === "auth/weak-password") {
-          toast.error("Password must be at least 8 characters");
-        }
-      }
-    } else {
-      toast.error("Tag not found");
     }
   };
 
@@ -261,7 +251,7 @@ export default function Signup() {
               src="https://img.icons8.com/color/96/google-logo.png"
               alt="google-logo"
             />
-            <div>Login with google</div>
+            <div>Sign Up with Google</div>
             <p className="w-[10%]"></p>
           </div>
           <p className="mt-3 text-[16px] mb-5">
