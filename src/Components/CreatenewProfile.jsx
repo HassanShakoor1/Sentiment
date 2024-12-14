@@ -235,7 +235,8 @@ export default function CreatenewProfile({ handleback, bio, toast, tagUid }) {
               state: state,
               quoteSection: quotesection,
               createdDate: formattedDate,
-              tagId: mytag,
+              tagId: "",
+              tags: [mytag],
               postPrivate: "",
               cemeteryName: "",
               cemeteryPlot: "",
@@ -261,7 +262,7 @@ export default function CreatenewProfile({ handleback, bio, toast, tagUid }) {
             ]);
             // toast.success("Form Submit successfully!");
             sessionStorage.removeItem("tempTag");
-            nevigate(`/viewprofile/${mytag}`);
+            // nevigate(`/viewprofile/${mytag}`);
             localStorage.setItem("tag", mytag);
             // setActiveQrMode(false);
             setBTnloader(false);
@@ -281,6 +282,7 @@ export default function CreatenewProfile({ handleback, bio, toast, tagUid }) {
             setstate("");
             setQuotesection("");
             settempimg("");
+            toast.success("New Meddallion created successfuly");
           } catch (error) {
             console.error("Error adding contact:", error);
             toast.error("");

@@ -8,7 +8,7 @@ import "react-toastify/dist/ReactToastify.css";
 import { equalTo, onValue, orderByChild, query, ref } from "firebase/database";
 import { sendPasswordResetEmail } from "firebase/auth";
 import { auth, db } from "../Firebase/firebaseConfig";
-import logo from "../images/logo.png";
+import logo from "../images/logo.svg";
 export default function Forgotpassword() {
   const [showPassword, setShowPassword] = useState(true);
   const [Password, setPassword] = useState(true);
@@ -70,11 +70,11 @@ export default function Forgotpassword() {
           </div>
         </div>
         <div className="w-[90%] rounded-[20px] bg-white flex justify-center mt-10 items-center flex-col">
-          <h1 className="font-[1000] text-[24px] text-black mt-5 Satoshi-bold ">
+          <h1 className="font-[1000] text-[24px] text-[#062A27] mt-5 Satoshi-bold ">
             Reset Password
           </h1>
           <h1 className="font-[60] text-[16px] text-black mt-2 ">
-            Log in to your Roam Tag account
+            Log in to your Sentiments Account
           </h1>
           <input
             type="email"
@@ -93,7 +93,7 @@ export default function Forgotpassword() {
             {" "}
             Back to?{" "}
             <Link
-              to="/login"
+              to="/"
               className="font-[600] text-[15px] text-black underline Satoshi-bold"
             >
               Log In

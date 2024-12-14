@@ -16,6 +16,84 @@ const Cropper = ({
   isCircle,
   handleFormSubmit,
 }) => {
+  // const getProfileCropImage = async () => {
+  //   const canvas = document.createElement("canvas");
+  //   const scaleX = myimg.naturalWidth / myimg.width;
+  //   const scaleY = myimg.naturalHeight / myimg.height;
+  //   canvas.width = crop.width;
+  //   canvas.height = crop.height;
+  //   const ctx = canvas.getContext("2d");
+
+  //   const pixelRatio = window.devicePixelRatio;
+  //   canvas.width = crop.width * pixelRatio;
+  //   canvas.height = crop.height * pixelRatio;
+  //   ctx.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0);
+  //   ctx.imageSmoothingQuality = "high";
+
+  //   ctx.drawImage(
+  //     myimg,
+  //     crop.x * scaleX,
+  //     crop.y * scaleY,
+  //     crop.width * scaleX,
+  //     crop.height * scaleY,
+  //     0,
+  //     0,
+  //     crop.width,
+  //     crop.height
+  //   );
+
+  //   const base64Image = canvas.toDataURL("image/jpeg");
+
+  //   setReduxState(base64Image);
+
+  //   handleFormSubmit();
+  //   handleclosecropper();
+  // };
+
+  // const getProfileCropImage = async () => {
+  //   handleFormSubmit();ok
+
+  //   const canvas = document.createElement("canvas");
+  //   const scaleX = myimg.naturalWidth / myimg.width;
+  //   const scaleY = myimg.naturalHeight / myimg.height;
+  //   canvas.width = crop.width;
+  //   canvas.height = crop.height;
+  //   const ctx = canvas.getContext("2d");
+  //   const pixelRatio = window.devicePixelRatio;
+
+  //   canvas.width = crop.width * pixelRatio;
+  //   canvas.height = crop.height * pixelRatio;
+
+  //   ctx.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0);
+  //   ctx.imageSmoothingQuality = "high";
+
+  //   ctx.drawImage(
+  //     myimg,
+  //     crop.x * scaleX,
+  //     crop.y * scaleY,
+  //     crop.width * scaleX,
+  //     crop.height * scaleY,
+  //     0,
+  //     0,
+  //     canvas.width,
+  //     canvas.height
+  //   );
+
+  //   canvas.toBlob(
+  //     (blob) => {
+  //       const reader = new FileReader();
+  //       reader.readAsDataURL(blob);
+  //       reader.onloadend = () => {
+  //         const base64Image = reader.result;
+  //         setReduxState(base64Image);
+  //         handleclosecropper();
+  //       };
+  //     },
+  //     "image/jpeg",
+  //     1
+  //   );
+  // };
+
   const getProfileCropImage = async () => {
     handleFormSubmit();
 
@@ -24,8 +102,8 @@ const Cropper = ({
     const scaleY = myimg.naturalHeight / myimg.height;
     const pixelRatio = window.devicePixelRatio;
 
-    canvas.width = crop.width * scaleX * pixelRatio;
-    canvas.height = crop.height * scaleY * pixelRatio;
+    canvas.width = crop.width * scaleX;
+    canvas.height = crop.height * scaleY;
     const ctx = canvas.getContext("2d");
 
     ctx.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0);
@@ -39,8 +117,8 @@ const Cropper = ({
       crop.height * scaleY,
       0,
       0,
-      canvas.width,
-      canvas.height
+      canvas.width / pixelRatio,
+      canvas.height / pixelRatio
     );
 
     canvas.toBlob(

@@ -7,10 +7,10 @@
   src: url(../src/font/Satoshi-Bold.otf);
 }
 .Satoshi-bold{
-  font-family: 'Satoshi-bold';
+  /* font-family: 'Satoshi-bold'; */
 }
 .Satoshi{
-  font-family: 'Satoshi';
+  /* font-family: 'Satoshi'; */
 }
 
 .orelega-one-regular {
@@ -19,6 +19,7 @@
   font-style: normal;
 }
 .app{
+  font-family: "Open Sans", sans-serif;
   display: flex;
   justify-content: center;
   width: 100%;

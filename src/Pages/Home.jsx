@@ -26,6 +26,7 @@ import { ClipLoader, FadeLoader } from "react-spinners";
 import "../App.css";
 import { useDispatch, useSelector } from "react-redux";
 import { setUser } from "../Redux/userSlice";
+import logo from "../images/logo.svg";
 export default function Home() {
   let dispatch = useDispatch();
 
@@ -258,13 +259,15 @@ export default function Home() {
             <img className="w-[24px] " src={menu} />
           </div>
           <div className="flex justify-start  flex-col ">
-            <p className="text-[14px] text-[#062A27]  orelega-one-regular">
+            {/* <p className="text-[14px] text-[#062A27]  orelega-one-regular ">
               The
             </p>
             <p className="text-[16px] text-[#062A27] mt-[-5px] flex ">
               <p className="orelega-one-regular text-[20px]">Sentiments Co.</p>{" "}
               &trade;
-            </p>
+            </p> */}
+
+            <img className="h-[30px] w-[155px] object-cover" src={logo} />
           </div>
           <div className="border flex justify-center items-center border-[#E5D6C5] bg-white w-[40px] h-[40px] rounded-[50%]">
             <img className="w-[24px] " src={Notification} />

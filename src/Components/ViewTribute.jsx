@@ -3,7 +3,7 @@ import { FaPlus } from "react-icons/fa6";
 import img2 from "../images/imgg (1).jpg";
 import img3 from "../images/imgg (2).jpg";
 import img4 from "../images/imgg (3).jpg";
-import { GoDotFill, GoHeart } from "react-icons/go";
+import { GoDotFill, GoHeart, GoHeartFill } from "react-icons/go";
 import { RiShareForwardLine } from "react-icons/ri";
 import chat from "../images/Chat (1).png";
 import send from "../images/Send message.png";
@@ -35,6 +35,7 @@ import {
   update,
   set,
   get,
+  remove,
 } from "firebase/database";
 import { getDownloadURL, ref as sRef, uploadBytes } from "firebase/storage";
 import { useParams } from "react-router-dom";
@@ -43,6 +44,9 @@ import "react-toastify/dist/ReactToastify.min.css";
 import { FiMoreVertical } from "react-icons/fi";
 export default function ViewTribute({ userViewProfile, id }) {
   let [Tribute, setTributes] = useState();
+  const [likedPosts, setLikedPosts] = useState(
+    () => JSON.parse(localStorage.getItem("likedPosts")) || {}
+  );
   let handleopen = () => {
     setTributes(true);
   };
@@ -129,22 +133,25 @@ export default function ViewTribute({ userViewProfile, id }) {
         return;
       }
 
-      let name = new Date().getTime() + inputValue.name;
-      const storageRef = sRef(storage, name);
-      uploadBytes(storageRef, inputValue)
-        .then(() => {
-          getDownloadURL(storageRef)
-            .then((URL) => {
-              console.log(URL);
-              let pushkey = push(ref(db, `tributes/`), {
-                ...tributeData,
-                image: URL,
-                userId: admin,
-                profileId: id,
-                timeStamp: new Date().toISOString(),
-              }).key;
-              update(ref(db, `tributes/${pushkey}`), { id: pushkey }).then(
-                () => {
+      let pushkey = push(ref(db, `tributes/`), {
+        ...tributeData,
+        userId: admin,
+        profileId: id,
+        timeStamp: new Date().toISOString(),
+      }).key;
+      if (inputValue) {
+        let name = new Date().getTime() + inputValue.name;
+        const storageRef = sRef(storage, name);
+        uploadBytes(storageRef, inputValue)
+          .then(() => {
+            getDownloadURL(storageRef)
+              .then((URL) => {
+                console.log(URL);
+
+                update(ref(db, `tributes/${pushkey}`), {
+                  id: pushkey,
+                  image: URL,
+                }).then(() => {
                   toast.success("New tribute created successfuly");
                   setTributeData({
                     title: "",
@@ -152,17 +159,29 @@ export default function ViewTribute({ userViewProfile, id }) {
                     userName: "",
                   });
                   handleclose();
-                }
-              );
-            })
-            .catch((error) => {
-              console.log(error);
-            });
-          setInputValue(null);
-        })
-        .catch((error) => {
-          console.log(error);
+                });
+              })
+              .catch((error) => {
+                console.log(error);
+              });
+            setInputValue(null);
+          })
+          .catch((error) => {
+            console.log(error);
+          });
+      } else {
+        update(ref(db, `tributes/${pushkey}`), {
+          id: pushkey,
+        }).then(() => {
+          toast.success("New tribute created successfuly");
+          setTributeData({
+            title: "",
+            description: "",
+            userName: "",
+          });
+          handleclose();
         });
+      }
     } else {
       toast.error("All fields are required");
     }
@@ -267,7 +286,29 @@ export default function ViewTribute({ userViewProfile, id }) {
     if (post && post.id != null) {
       const currentLikes = parseInt(post.likes, 10) || 0; // Ensure likes is treated as a number
       const newLikesCount = currentLikes + 1;
-      update(ref(db, `tributes/${post.id}/`), { likes: newLikesCount });
+      update(ref(db, `tributes/${post.id}/`), { likes: newLikesCount }).then(
+        () => {
+          const newLikedPosts = { ...likedPosts, [post.id]: true };
+          setLikedPosts(newLikedPosts);
+          localStorage.setItem("likedPosts", JSON.stringify(newLikedPosts));
+        }
+      );
+    } else {
+      console.error("Invalid post data");
+    }
+  };
+
+  const unLike = (post) => {
+    if (post && post.id != null) {
+      const currentLikes = parseInt(post.likes, 10) || 0; // Ensure likes is treated as a number
+      const newLikesCount = currentLikes - 1;
+      update(ref(db, `tributes/${post.id}/`), { likes: newLikesCount }).then(
+        () => {
+          const newLikedPosts = { ...likedPosts, [post.id]: false };
+          setLikedPosts(newLikedPosts);
+          localStorage.setItem("likedPosts", JSON.stringify(newLikedPosts));
+        }
+      );
     } else {
       console.error("Invalid post data");
     }
@@ -312,6 +353,20 @@ export default function ViewTribute({ userViewProfile, id }) {
   const handleClose = () => {
     setAnchorEl(null);
   };
+
+  const [anchorEl2, setAnchorEl2] = useState(null);
+
+  const [selectedPostId, setSelectedPostId] = useState(null);
+  const handleClick2 = (event, postId) => {
+    setAnchorEl2(event.currentTarget);
+    console.log(postId);
+    setSelectedPostId(postId);
+  };
+  const handleClose2 = () => {
+    setAnchorEl2(null);
+    setSelectedPostId(null);
+  };
+
   const handleDeleteCmnt = (timeStamp) => {
     const postRef = ref(db, `tributes/${commnetId}/comments`);
 
@@ -346,7 +401,24 @@ export default function ViewTribute({ userViewProfile, id }) {
   const handleRemoveImage = () => {
     setInputValue("");
   };
-  console.log(adminData);
+
+  // handle delete post
+
+  const handleDeletePost = (postId) => {
+    console.log(postId);
+    if (tributes?.length === 1) {
+      settributes([]);
+    }
+    const postRef = ref(db, `tributes/${postId}`);
+    remove(postRef)
+      .then(() => {
+        toast.success("Tribute deleted successfully");
+      })
+      .catch((error) => {
+        toast.error("Failed to delete post: " + error.message);
+      });
+  };
+
   return (
     <>
       <div className="flex justify-center items-center flex-col w-[100%] mt-5">
@@ -379,41 +451,95 @@ export default function ViewTribute({ userViewProfile, id }) {
               className="flex items-center flex-col w-[100%] mb-5"
               onClick={() => setSelectedPost(item?.id)}
             >
-              <div className="flex items-center w-[100%]">
-                <img
-                  className="w-[40px] h-[40px] object-cover rounded-[50%]"
-                  src={
-                    adminData?.profileImage && !item?.userName
-                      ? adminData?.profileImage
-                      : profile1
-                  }
-                  alt={item?.title}
-                />
-                <p className="text-[16px] font-bold Satoshi-bold ml-3 text-[#062A27]">
-                  {item?.userName
-                    ? item?.userName
-                    : adminData?.firstName + " " + adminData?.lastName}
-                </p>
-                <GoDotFill className="text-[#5F6161] ml-2" />
-                <p className="text-[#5F6161] ml-2">
-                  {timeDifference(item?.timeStamp)}
-                </p>
+              <div className="flex items-center justify-between w-[100%]">
+                <div className="flex items-center">
+                  <img
+                    className="w-[40px] h-[40px] object-cover rounded-[50%]"
+                    src={
+                      adminData?.profileImage && !item?.userName
+                        ? adminData?.profileImage
+                        : profile1
+                    }
+                    alt={item?.title}
+                  />
+
+                  <p className="text-[16px] font-bold Satoshi-bold ml-3 text-[#062A27]">
+                    {item?.userName
+                      ? item?.userName
+                      : adminData?.firstName + " " + adminData?.lastName}{" "}
+                  </p>
+                </div>
+                <div className="w-[40%] flex justify-between items-center ">
+                  <div className="flex items-center">
+                    <GoDotFill className="text-[#5F6161]" />
+                    <p className="text-[#5F6161] text-sm ml-1">
+                      {timeDifference(item?.timeStamp)}
+                    </p>
+                  </div>
+                  {admin && admin === adminData?.id && (
+                    <FiMoreVertical
+                      onClick={(e) => handleClick2(e, item.id)}
+                      className="text-[#5F6161] text-[20px] font-bold"
+                    />
+                  )}
+                  <Menu
+                    id="fade-menu"
+                    anchorEl={anchorEl2}
+                    keepMounted
+                    open={Boolean(anchorEl2)}
+                    onClose={handleClose2}
+                    anchorOrigin={{
+                      vertical: "bottom",
+                      horizontal: "center",
+                    }}
+                    transformOrigin={{
+                      vertical: "top",
+                      horizontal: "right",
+                    }}
+                    getContentAnchorEl={null}
+                  >
+                    <MenuItem
+                      onClick={() => {
+                        handleDeletePost(item?.id);
+                        handleClose2();
+                      }}
+                      className="flex items-center"
+                    >
+                      <img className="w-[20px] mr-3" src={delet} alt="delete" />
+                      <p className="text-[red]">Delete Post</p>
+                    </MenuItem>
+                  </Menu>
+                </div>
               </div>
               <div className="w-[100%] justify-start">
                 <p className="text-[#5F6161] font-[600] mt-2">{item?.title}</p>
                 <p className="text-[#5F6161] mt-2">{item?.description}</p>
               </div>
-              <img
-                className="w-[100%] h-[330px] object-cover rounded-[8px] mt-2"
-                src={item?.image}
-                alt="Post"
-              />
+
+              {item?.image && (
+                <div className="w-[100%] h-[330px] object-cover rounded-[8px] mt-2 flex justify-center items-center">
+                  <img
+                    className=" max-h-[90%] max-w-[90%]  object-fit object-center"
+                    // className="w-[100%] h-[330px] object-cover rounded-[8px] mt-2"
+                    src={item?.image}
+                    alt="Post"
+                  />
+                </div>
+              )}
               <div className="flex items-center w-[100%] mt-2">
                 <div
                   className="border flex justify-center items-center border-[#E5D6C5] bg-white w-[30px] h-[30px] rounded-[50%] cursor-pointer"
-                  onClick={() => updateLikes(item)}
+                  onClick={
+                    likedPosts[item.id]
+                      ? () => unLike(item)
+                      : () => updateLikes(item)
+                  }
                 >
-                  <GoHeart className="text-[#062A27] text-[16px]" />
+                  {likedPosts[item.id] ? (
+                    <GoHeartFill className="text-[#062A27] text-[16px] " />
+                  ) : (
+                    <GoHeart className="text-[#062A27] text-[16px] " />
+                  )}
                 </div>
                 <p className="text-[14px] text-[#062A27] font-bold Satoshi-bold ml-2">
                   {item?.likes}
@@ -502,17 +628,22 @@ export default function ViewTribute({ userViewProfile, id }) {
                                 20
                               )}
                             </p>
-                            <GoDotFill className="text-[#5F6161] ml-2" />
-                            <p className="text-[#5F6161]  text-[12px] ml-2">
-                              {" "}
-                              {timeDifference(singleComment?.timeStamp)}
-                            </p>
-                            <FiMoreVertical
-                              onClick={(e) =>
-                                handleClick(e, singleComment?.timeStamp, item)
-                              }
-                              className="text-[#5F6161] text-[20px] ml-5 font-bold"
-                            />
+                            <div className="flex items-center ">
+                              <GoDotFill className="text-[#5F6161] ml-2" />
+                              <p className="text-[#5F6161]  text-[12px] ml-1">
+                                {" "}
+                                {timeDifference(singleComment?.timeStamp)}
+                              </p>
+                            </div>
+
+                            {admin && admin === adminData?.id && (
+                              <FiMoreVertical
+                                onClick={(e) =>
+                                  handleClick(e, singleComment?.timeStamp, item)
+                                }
+                                className="text-[#5F6161] text-[20px] ml-5 font-bold"
+                              />
+                            )}
                           </div>
                           <p className="pl-3 pb-3 pt-2 text-[15px] w-[70%] text-[#5F6161]">
                             {singleComment?.comment}
@@ -536,23 +667,28 @@ export default function ViewTribute({ userViewProfile, id }) {
                             20
                           )}
                         </p>
-                        <GoDotFill className="text-[#5F6161]  ml-2" />
-                        <p className="text-[#5F6161] text-[12px] ml-2">
-                          {" "}
-                          {timeDifference(
-                            Object.values(item?.comments)?.[0]?.timeStamp
-                          )}
-                        </p>
-                        <FiMoreVertical
-                          onClick={(e) =>
-                            handleClick(
-                              e,
-                              Object.values(item?.comments)?.[0]?.timeStamp,
-                              item
-                            )
-                          }
-                          className="text-[#5F6161] text-[20px] ml-5 font-bold"
-                        />
+                        <div className="flex items-center ">
+                          <GoDotFill className="text-[#5F6161]  ml-2" />
+                          <p className="text-[#5F6161] text-[12px] ml-1">
+                            {" "}
+                            {timeDifference(
+                              Object.values(item?.comments)?.[0]?.timeStamp
+                            )}
+                          </p>
+                        </div>
+
+                        {admin && admin === adminData?.id && (
+                          <FiMoreVertical
+                            onClick={(e) =>
+                              handleClick(
+                                e,
+                                Object.values(item?.comments)?.[0]?.timeStamp,
+                                item
+                              )
+                            }
+                            className="text-[#5F6161] text-[20px] ml-5 font-bold"
+                          />
+                        )}
                       </div>
                       <p className="pl-3 pb-3 pt-2 w-[70%] text-[15px] text-[#5F6161]">
                         {Object.values(item?.comments)?.[0]?.comment}

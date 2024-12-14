@@ -38,6 +38,7 @@ import { Slide, ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import NotFound from "../Pages/NotFound";
 import { FadeLoader } from "react-spinners";
+import logo from "../images/logo.svg";
 export default function ViewProfile() {
   let dispatch = useDispatch();
   const { id } = useParams();
@@ -142,65 +143,73 @@ export default function ViewProfile() {
   const [notFound, setNotFound] = useState(false);
   let [audioData, setAudioData] = useState([]);
 
+  const returnDbRef = (tabel, key, value) => {
+    const dbRef = query(ref(db, tabel), orderByChild(key), equalTo(value));
+    return dbRef;
+  };
+
   const getSingleChild = () => {
     setloading(true);
-    const tagRef = query(
-      ref(db, "Profile/"),
-      orderByChild("tagId"),
-      equalTo(id)
-    );
+    // const tagRef = query(ref(db, "Tags/"), orderByChild("tagId"), equalTo(id));
 
-    const tagTableRef = query(
-      ref(db, "Tags/"),
-      orderByChild("tagId"),
-      equalTo(id)
-    );
+    // const tagTableRef = query(
+    //   ref(db, "Tags/"),
+    //   orderByChild("tagId"),
+    //   equalTo(id)
+    // );
 
-    onValue(tagRef, async (snapshot) => {
+    onValue(returnDbRef("Tags/", "tagId", id), async (snapshot) => {
       const data = await snapshot.val();
       if (data) {
         const thedata = Object.values(data)?.[0];
         console.log(Object.values(data)?.[0]);
 
-        if (thedata) {
-          setUserdata(thedata);
-          dispatch(setViewProfile(thedata));
-          if (thedata?.timeline) {
-            setEvents(Object.values(thedata?.timeline));
-          } else {
-            setEvents([]);
-          }
-          if (thedata?.imageMedia) {
-            setImageData(Object.values(thedata?.imageMedia));
-          } else {
-            setImageData([]);
-          }
-          if (thedata.videoMedia) {
-            setVideoData(Object.values(thedata.videoMedia));
-          } else {
-            setVideoData([]);
-          }
-          if (thedata.voiceMedia) {
-            setAudioData(Object.values(thedata.voiceMedia));
-          } else {
-            setAudioData([]);
-          }
-          setloading(false);
+        if (thedata.status === true && thedata.userid) {
+          onValue(
+            returnDbRef("Profile/", "id", thedata.userid),
+            async (snapshot) => {
+              const data = await snapshot.val();
+
+              const profileData = Object.values(data)?.[0];
+
+              if (profileData) {
+                setUserdata(profileData);
+                dispatch(setViewProfile(profileData));
+                if (profileData?.timeline) {
+                  setEvents(Object.values(profileData?.timeline));
+                } else {
+                  setEvents([]);
+                }
+                if (profileData?.imageMedia) {
+                  setImageData(Object.values(profileData?.imageMedia));
+                } else {
+                  setImageData([]);
+                }
+                if (profileData.videoMedia) {
+                  setVideoData(Object.values(profileData.videoMedia));
+                } else {
+                  setVideoData([]);
+                }
+                if (profileData.voiceMedia) {
+                  setAudioData(Object.values(profileData.voiceMedia));
+                } else {
+                  setAudioData([]);
+                }
+                setloading(false);
+              } else {
+                navigate(`/`);
+              }
+            }
+          );
         } else {
-          navigate(`/`);
+          navigate(`/home`);
+          sessionStorage.setItem("tempTag", id);
         }
       } else {
-        const idRef = query(
-          ref(db, "Profile/"),
-          orderByChild("id"),
-          equalTo(id)
-        );
-        onValue(idRef, async (snapshot) => {
+        onValue(returnDbRef("Profile/", "id", id), async (snapshot) => {
           const data = await snapshot.val();
           if (data) {
             const thedata = Object.values(data)?.[0];
-            console.log(Object.values(data)?.[0]);
-
             if (thedata) {
               setUserdata(thedata);
               dispatch(setViewProfile(thedata));
@@ -263,28 +272,10 @@ export default function ViewProfile() {
                 setNotFound(true);
               }
             } else {
-              onValue(tagTableRef, async (snapshot) => {
-                const data = await snapshot.val();
-                if (data) {
-                  navigate(`/home`);
-                  sessionStorage.setItem("tempTag", id);
-                } else {
-                  navigate("/");
-                  sessionStorage.setItem("tempTag", id);
-                }
-              });
+              navigate("/");
             }
           } else {
-            onValue(tagTableRef, async (snapshot) => {
-              const data = await snapshot.val();
-              if (data) {
-                navigate(`/home`);
-                sessionStorage.setItem("tempTag", id);
-              } else {
-                navigate("/");
-                sessionStorage.setItem("tempTag", id);
-              }
-            });
+            navigate("/");
           }
         });
       }
@@ -333,13 +324,14 @@ export default function ViewProfile() {
         )}
         <div className="flex justify-center items-center w-[90%] mt-5">
           <div className="flex justify-start  flex-col ">
-            <p className="text-[14px] text-[#062A27]  orelega-one-regular">
+            {/* <p className="text-[14px] text-[#062A27]  orelega-one-regular">
               The
             </p>
             <p className="text-[16px] text-[#062A27] mt-[-5px] flex ">
               <p className="orelega-one-regular text-[20px]">Sentiments Co.</p>{" "}
               &trade;
-            </p>
+            </p> */}
+            <img className="h-[30px] w-[155px] object-cover" src={logo} />
           </div>
         </div>
         <div className="flex  items-center flex-col w-[90%] rounded-[22px] mt-5  bg-white">

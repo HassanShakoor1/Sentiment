@@ -20,7 +20,7 @@ function App() {
     return currentUser?.length > 0 && currentUser != undefined ? (
       children
     ) : (
-      <Navigate to="/" />
+      <Navigate to="/signup" />
     );
   };
   const RequireAuthhome = ({ children }) => {

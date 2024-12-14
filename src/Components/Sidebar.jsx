@@ -9,6 +9,7 @@ import { Store } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
 import { Box, Modal } from "@mui/material";
 import { IoClose } from "react-icons/io5";
+import logo from "../images/logo.svg";
 export default function Sidebar({
   handleslideclose,
   handleaccount,
@@ -38,7 +39,7 @@ export default function Sidebar({
           <div className="flex justify-center items-center  bg-[#f0f0f0]  h-[80px] w-[100%]">
             <div className="flex justify-between items-center w-[90%]">
               <div className="flex justify-start  flex-col  w-[90%]">
-                <p className="text-[14px] text-[#062A27]  orelega-one-regular">
+                {/* <p className="text-[14px] text-[#062A27]  orelega-one-regular">
                   The
                 </p>
                 <p className="text-[16px] text-[#062A27] mt-[-5px] flex ">
@@ -46,7 +47,8 @@ export default function Sidebar({
                     Sentiments Co.
                   </p>{" "}
                   &trade;
-                </p>
+                </p> */}
+                <img className="h-[30px] w-[155px] object-cover" src={logo} />
               </div>
               <div
                 onClick={handleslideclose}
@@ -64,21 +66,29 @@ export default function Sidebar({
               <img className="w-[25px]" src={user} />
               <p className="Satoshi-bold text-[14px] ml-2">My Account</p>
             </div>
-            <div className="flex justify-start cursor-pointer items-center mt-5  border-b border-[#DAEAE8] pb-5 w-[100%]">
+            <div
+              className="flex justify-start cursor-pointer items-center mt-5  border-b border-[#DAEAE8] pb-5 w-[100%]"
+              // onClick={() =>
+              //   window.open("https://sentiments.co/collections/all")
+              // }
+            >
               <img className="w-[25px]" src={store} />
               <p className="Satoshi-bold text-[14px] ml-2">Vist Store</p>
             </div>
-            <div className="flex justify-start cursor-pointer items-center mt-5  border-b border-[#DAEAE8] pb-5 w-[100%]">
+            {/* <div className="flex justify-start cursor-pointer items-center mt-5  border-b border-[#DAEAE8] pb-5 w-[100%]">
               <img className="w-[25px]" src={update} />
               <p className="Satoshi-bold text-[14px] ml-2">Updates</p>
-            </div>
-            <div className="flex justify-start cursor-pointer items-center mt-5  border-b border-[#DAEAE8] pb-5 w-[100%]">
+            </div> */}
+            <div
+              className="flex justify-start cursor-pointer items-center mt-5  border-b border-[#DAEAE8] pb-5 w-[100%]"
+              // onClick={() => window.open("https://sentiments.co/pages/faq")}
+            >
               <img className="w-[25px]" src={help} />
               <p className="Satoshi-bold text-[14px] ml-2">Help Center</p>
             </div>
             <div
               onClick={handlemodal}
-              className="flex justify-start cursor-pointer items-center mt-5   pb-5 w-[100%]"
+              className="flex justify-start cursor-pointer items-center mt-5  pb-5 w-[100%]"
             >
               <img className="w-[25px]" src={logout} />
               <p className="Satoshi-bold text-[14px] ml-2 text-[red]">

@@ -21,7 +21,7 @@ import {
 } from "firebase/database";
 import { useDispatch } from "react-redux";
 import { setUser } from "../Redux/userSlice";
-import logo from "../images/logo.png";
+import logo from "../images/logo.svg";
 
 export default function Login() {
   const [showPassword, setShowPassword] = useState(true);

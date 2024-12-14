@@ -31,7 +31,15 @@ import {
 import { IoChevronBack, IoClose } from "react-icons/io5";
 import CreateEditprofile from "./CreateEditprofile";
 import Cropper from "./Cropper";
-import { onValue, ref, remove, update } from "firebase/database";
+import {
+  equalTo,
+  onValue,
+  orderByChild,
+  query,
+  ref,
+  remove,
+  update,
+} from "firebase/database";
 import { db, storage } from "../Firebase/firebaseConfig";
 import { RiSubtractLine } from "react-icons/ri";
 import { ClipLoader } from "react-spinners";
@@ -41,12 +49,14 @@ import "react-toastify/dist/ReactToastify.css";
 import { useDispatch, useSelector } from "react-redux";
 import { setUserProfile } from "../Redux/profileSlice";
 import Tribute from "./Tribute";
+import { BsQrCode } from "react-icons/bs";
 
 export default function Editprofile() {
   let dispatch = useDispatch();
   const userProfile = useSelector((state) => state.profile);
 
   const [privacy, setPrivacy] = useState("public");
+  const [mytag, setMyTag] = useState("");
 
   const handlePrivacyChange = (event) => {
     setPrivacy(event.target.value);
@@ -118,16 +128,9 @@ export default function Editprofile() {
   };
 
   const handleDeleteProfile = () => {
-    // Add your delete profile logic here
-    // For now, let's just log a message
-    console.log("Profile deleted!");
     setdelete(false);
   };
   const [status, setstatus] = useState(false);
-
-  const handlestatus = () => {
-    setstatus(true);
-  };
 
   const handleClosestatus = () => {
     setstatus(false);
@@ -149,6 +152,8 @@ export default function Editprofile() {
   useEffect(() => {
     getSingleChild();
   }, []);
+
+  console.log(userdata);
 
   let [cropModal, setcropModal] = useState(false);
   const [profile, setProfile] = useState("");
@@ -368,8 +373,8 @@ export default function Editprofile() {
     }
   };
 
-  const handleCloseModal = () => {
-    setShowModal(false);
+  const handleShowModal = () => {
+    setShowModal(!showModal);
   };
   const handleDelete = async () => {
     try {
@@ -391,6 +396,40 @@ export default function Editprofile() {
     } catch (error) {
       console.log("Error updating user data: ", error);
     }
+  };
+
+  const assignNewTag = () => {
+    if (!mytag) {
+      toast.error("Code should not be empty");
+      setBTnloader(false);
+      return;
+    }
+    const findtagRef = query(
+      ref(db, "Tags/"),
+      orderByChild("tagId"),
+      equalTo(mytag)
+    );
+    onValue(findtagRef, async (snapshot) => {
+      const data = await snapshot.val();
+      if (data) {
+        const tagData = Object.values(data)?.[0];
+        if (tagData && tagData?.status === false && !tagData?.userid) {
+          update(ref(db, `Profile/${id}`), {
+            tags: userdata?.tags ? [...userdata?.tags, mytag] : [mytag],
+          }).then(() => {
+            update(ref(db, `Tags/${tagData?.id}`), {
+              status: true,
+              userid: id,
+            }).then(() => {
+              toast.success("QR assigned successfuly");
+              setMyTag("");
+            });
+          });
+        }
+      } else {
+        toast.error("QR not found");
+      }
+    });
   };
   return (
     <>
@@ -648,10 +687,26 @@ export default function Editprofile() {
         }}
         getContentAnchorEl={null} //
       >
-        <MenuItem onClick={handleOpendelete} className="flex items-center  ">
+        <MenuItem
+          onClick={() => {
+            handleShowModal(), handleClose();
+          }}
+          className="flex items-center  "
+        >
+          <p className="text-[#062A27] text-[13px] flex items-center">
+            <BsQrCode className="mr-1 w-[25px]" />
+            Assign Another QR
+          </p>
+        </MenuItem>
+        <MenuItem
+          onClick={() => {
+            handleOpendelete, handleClose();
+          }}
+          className="flex items-center  "
+        >
           <p className="text-[red] text-[13px] flex items-center">
+            <FaDeleteLeft className="mr-1 w-[25px]" />
             Delete Profile
-            <FaDeleteLeft className="ml-1 w-[25px]" />
           </p>
         </MenuItem>
       </Menu>
@@ -1097,7 +1152,7 @@ export default function Editprofile() {
       />
       <Modal
         open={showModal}
-        onClose={handleCloseModal}
+        onClose={handleShowModal}
         aria-labelledby="activation-instructions-modal"
         aria-describedby="activation-instructions-description"
       >
@@ -1108,6 +1163,7 @@ export default function Editprofile() {
             left: "50%",
             transform: "translate(-50%, -50%)",
             width: 340,
+            height: 210,
             bgcolor: "white",
             borderRadius: "10px",
             background: "#FFF",
@@ -1122,30 +1178,42 @@ export default function Editprofile() {
           }}
         >
           <div className="flex items-center w-[100%] flex-col">
-            <div className="flex w-[90%] justify-between items-center  mt-5">
-              <div className="flex items-center"></div>
-              <div
-                onClick={handleCloseModal}
-                className="flex justify-center items-center border border-[#E5E8EE] w-[25px] h-[25px] rounded-[50%]"
-              >
-                <img className="w-[10px]" src={cross} />
+            <div className="flex justify-start  flex-col w-[90%] mt-1">
+              <h1 className="mt-2 font-bold text-[16px] text-[#062A27] Satoshi-bold">
+                Enter the code
+              </h1>
+
+              <h1 className="mt-1 font-bold text-[14px] text-[#5F6161]">
+                If the link on Sentiment QR is
+                app.sentiment.com/viewprofile/0125 your code is 0125
+              </h1>
+
+              <div className="flex justify-start flex-col mt-2">
+                <input
+                  type="text"
+                  placeholder="Enter your code here"
+                  className="w-[100%] outline-none border border-[#C9C9C9]  h-[35px] rounded-[5px] pl-3 pr-3"
+                  value={mytag}
+                  onChange={(e) => setMyTag(e.target.value)}
+                />
+              </div>
+              <div className="w-[100%] flex justify-center gap-2 mt-4">
+                <button
+                  onClick={() => handleShowModal()}
+                  className="border border-[#062A27] text-[#062A27] rounded-[30px] w-[120px] h-[35px] flex justify-center items-center text-[13px] "
+                >
+                  {" "}
+                  Cancel
+                </button>
+                <button
+                  onClick={assignNewTag}
+                  className="bg-[#062A27] text-[white] rounded-[30px] w-[120px] h-[35px] flex justify-center items-center text-[13px] "
+                >
+                  {" "}
+                  Assign
+                </button>
               </div>
             </div>
-            <div className="w-[90%]">
-              <h2 className="text-[16px] font-bold mb-2">
-                How to activate this account
-              </h2>
-              <p className="text-[16px] font-[400] mb-2">
-                Step 1: Buy a medallion
-              </p>
-              <p className="text-[16px] font-[400] mb-2">
-                Step 2: Scan the medallion and select this account from the list
-              </p>
-              <p className="text-[16px] font-[400] mb-2">
-                Step 3: Share the link with family and friends
-              </p>
-            </div>
-            <br></br>
           </div>
         </Box>
       </Modal>

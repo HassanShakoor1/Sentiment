@@ -20,7 +20,7 @@ import {
   ref,
   update,
 } from "firebase/database";
-import logo from "../images/logo.png";
+import logo from "../images/logo.svg";
 export default function Signup() {
   const { id } = useParams();
   const [showPassword, setShowPassword] = useState(true);
