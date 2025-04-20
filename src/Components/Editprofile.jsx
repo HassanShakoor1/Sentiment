@@ -18,6 +18,7 @@ import Sidebar from "./Sidebar";
 import Menu from "@mui/material/Menu";
 import MenuItem from "@mui/material/MenuItem";
 import { FaDeleteLeft } from "react-icons/fa6";
+import logo from "../images/logo.svg";
 import Modal from "@mui/material/Modal";
 import cross from "../images/cross.png";
 import back from "../images/Frame 1171277120.png";
@@ -151,6 +152,7 @@ export default function Editprofile() {
   };
   useEffect(() => {
     getSingleChild();
+    
   }, []);
 
   console.log(userdata);
@@ -477,15 +479,7 @@ export default function Editprofile() {
           >
             <img className="w-[24px] " src={menu} />
           </div>
-          <div className="flex justify-start  flex-col ">
-            <p className="text-[14px] text-[#062A27]  orelega-one-regular">
-              The
-            </p>
-            <p className="text-[16px] text-[#062A27] mt-[-5px] flex ">
-              <p className="orelega-one-regular text-[20px]">Sentiments Co.</p>{" "}
-              &trade;
-            </p>
-          </div>
+          <img className="h-[30px] w-[155px] object-cover" src={logo} />
           <div className="border flex justify-center items-center border-[#E5D6C5] bg-white w-[40px] h-[40px] rounded-[50%]">
             <img className="w-[24px] " src={Notification} />
           </div>
@@ -700,7 +694,7 @@ export default function Editprofile() {
         </MenuItem>
         <MenuItem
           onClick={() => {
-            handleOpendelete, handleClose();
+            handleOpendelete(), handleClose();
           }}
           className="flex items-center  "
         >

@@ -31,6 +31,7 @@ export default function Myfavorites({ toast }) {
   };
   let [modal, setModal] = useState(false);
   let [fvrtid, setFvrtid] = useState(false);
+  let [selectedProfile, setSelectedProfile] = useState(null);
 
   let handleopen = (id) => {
     setModal(true);
@@ -43,11 +44,13 @@ export default function Myfavorites({ toast }) {
     // Add more data objects as needed
   ];
   let [isModalOpen, setisModalOpen] = useState(false);
-  let handleopenshare = () => {
+  let handleopenshare = (profile) => {
+    setSelectedProfile(profile);
     setisModalOpen(true);
   };
   let handleCloseshare = () => {
     setisModalOpen(false);
+    setSelectedProfile(null);
   };
   let [userprofile, setUserprofile] = useState("");
   let [loading, setloading] = useState(false);
@@ -125,7 +128,6 @@ export default function Myfavorites({ toast }) {
                           {item.createdDate}
                         </p>
                       </div>
-                      {/* <p className={`font-bold text-[16px] flex items-center ${item.status === 'Active' ? 'text-[#3F9A55]' : 'text-red-500'}`}><p className='text-[black] font-[400] text-[15px] mr-2'>Profile type:</p> {item.status}</p> */}
                     </div>
                     <div
                       onClick={() => handleopen(item.id)}
@@ -147,7 +149,7 @@ export default function Myfavorites({ toast }) {
                       View
                     </button>
                     <button
-                      onClick={handleopenshare}
+                      onClick={() => handleopenshare(item)}
                       className="bg-[#062A27] text-[white] rounded-[30px] w-[47%] h-[40px] flex justify-center items-center Satoshi-bold"
                     >
                       <RiShareForwardLine className="w-[30px] h-[20px] mr-2" />
@@ -166,7 +168,7 @@ export default function Myfavorites({ toast }) {
                   No favorites medallions
                 </h1>
                 <p className="text-[#5F6161] text-[13px] w-[70%] text-center mt-3">
-                  You haven’t any favorite meddalions
+                  You haven't any favorite meddalions
                 </p>
               </div>
             </div>
@@ -276,7 +278,7 @@ export default function Myfavorites({ toast }) {
             </div>
           </div>
           <div className="flex justify-center items-center mt-2 w-[100%]">
-            <Share />
+            <Share toast={toast} qrUrl={`/qr/${selectedProfile?.id}`} />
           </div>
           <br></br>
         </Box>

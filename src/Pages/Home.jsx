@@ -314,7 +314,7 @@ export default function Home() {
             </h1>
             <div className="flex items-center justify-center mt-3">
               <img width={15} src={email} />
-              <p className="ml-1 text-[14px]">{userdata?.email}</p>
+              <p className="ml-1 text-[14px]">hassan.shakoor@icloud.com</p>
             </div>
             {/* <div className='flex items-center justify-center mt-3'>
     <img width={15} src={Location}/>
@@ -331,10 +331,10 @@ export default function Home() {
               style={
                 favorites
                   ? {
-                      borderBottom: "2px solid black",
-                      color: "#062A27",
-                      fontFamily: "Satoshi-bold",
-                    }
+                    borderBottom: "2px solid black",
+                    color: "#062A27",
+                    fontFamily: "Satoshi-bold",
+                  }
                   : {}
               }
             >
@@ -346,10 +346,10 @@ export default function Home() {
               style={
                 post
                   ? {
-                      borderBottom: "2px solid black",
-                      color: "#062A27",
-                      fontFamily: "Satoshi-bold",
-                    }
+                    borderBottom: "2px solid black",
+                    color: "#062A27",
+                    fontFamily: "Satoshi-bold",
+                  }
                   : {}
               }
             >
@@ -361,10 +361,10 @@ export default function Home() {
               style={
                 Medallions
                   ? {
-                      borderBottom: "2px solid black",
-                      color: "#062A27",
-                      fontFamily: "Satoshi-bold",
-                    }
+                    borderBottom: "2px solid black",
+                    color: "#062A27",
+                    fontFamily: "Satoshi-bold",
+                  }
                   : {}
               }
             >
@@ -376,10 +376,10 @@ export default function Home() {
               style={
                 account
                   ? {
-                      borderBottom: "2px solid black",
-                      color: "#062A27",
-                      fontFamily: "Satoshi-bold",
-                    }
+                    borderBottom: "2px solid black",
+                    color: "#062A27",
+                    fontFamily: "Satoshi-bold",
+                  }
                   : {}
               }
             >

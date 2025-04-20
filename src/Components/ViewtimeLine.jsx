@@ -14,7 +14,14 @@ export default function ViewtimeLine({loading,events}) {
   let handletimelineImageview=()=>{
     setTimelineImageView(!timelineImageView)
   }
-  
+  const formatDateNew = (dateString) => {
+    const date = new Date(dateString); // Parse input date
+    return date.toLocaleDateString("en-US", {
+      month: "short",  // Short month name like 'Dec'
+      day: "2-digit", // Two-digit day number
+      year: "numeric" // Full year number
+    });
+  };
    
   return (
     <>
@@ -35,27 +42,31 @@ export default function ViewtimeLine({loading,events}) {
   <div className='flex justify-start flex-col w-[90%] mt-5'>
   <div className='text-[16px] text-[#062A27] font-bold Satoshi-bold '>SIGNIFICANT EVENTS</div>
   <div>
-  {events.map((item, index) => (
-    <div key={index} className='flex justify-start w-[100%] mt-3 flex-col'>
-      <div className='w-[100%] flex justify-between '>
-        <div className='w-[100px] h-[30px] font-bold Satoshi-bold flex justify-center text-[12px] whitespace-nowrap items-center rounded-[5px] bg-[#D3E8E6]'>
-          {item?.timelineDate}
+  {events
+    ?.slice() // Creates a shallow copy to avoid mutating the original array
+    .sort((a, b) => new Date(a.timelineDate) - new Date(b.timelineDate)) // Sort by date
+    .map((item, index) => (
+      <div key={index} className="flex justify-start w-[100%] mt-3 flex-col">
+        <div className="w-[100%] flex justify-between">
+          <div className="w-[100px] h-[30px] font-bold Satoshi-bold flex justify-center text-[12px] whitespace-nowrap items-center rounded-[5px] bg-[#D3E8E6]">
+            {formatDateNew(item?.timelineDate)}
+          </div>
+        </div>
+        <div
+          onClick={() => handleSingleTimelineClick(item)}
+          className="cursor-pointer flex justify-start mt-4 h-[65px] items-center border-l border-dashed border-[#5F6161]"
+        >
+          <img
+            className="w-[53px] ml-3 h-[53px] rounded-[4px] object-cover"
+            src={item?.timelineImage || "https://placehold.co/53"}
+          />
+          <p className="text-[#5F6161] ml-3 h-[60px] overflow-y-auto">
+            {item?.timelineTitle}
+          </p>
         </div>
       </div>
-      <div
-        onClick={() => handleSingleTimelineClick(item)}
-        className='cursor-pointer flex justify-start mt-4 h-[65px] items-center border-l border-dashed border-[#5F6161]'
-      >
-        <img
-          className='w-[53px] ml-3 h-[53px] rounded-[4px] object-cover'
-          src={item?.timelineImage?item?.timelineImage:"https://placehold.co/53"}
-        />
-        <p className='text-[#5F6161] ml-3 h-[60px] overflow-y-auto'>
-          {item?.timelineTitle}
-        </p>
-      </div>
-    </div>
-  ))}
+    ))}
+  
   
   </div>
   </div>

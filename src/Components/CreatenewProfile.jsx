@@ -142,162 +142,172 @@ export default function CreatenewProfile({ handleback, bio, toast, tagUid }) {
   };
   const nevigate = useNavigate();
   const handleSubmit = async () => {
-    setBTnloader(true);
-
     if (!mytag) {
       toast.error("Code should not be empty");
       setBTnloader(false);
       return;
     }
-    const findtagRef = query(
-      ref(db, "Tags/"),
-      orderByChild("tagId"),
-      equalTo(mytag)
-    );
-    onValue(findtagRef, async (snapshot) => {
-      const data = await snapshot.val();
-      if (data) {
-        const theTagData = Object.values(data)?.[0];
-
-        if (theTagData && theTagData?.status === false) {
-          if (!firstName && !lastName) {
+    setBTnloader(true);
+  
+    try {
+      const findtagRef = query(
+        ref(db, "Tags/"),
+        orderByChild("tagId"),
+        equalTo(mytag)
+      );
+  
+      onValue(
+        findtagRef,
+        async (snapshot) => {
+          const data = await snapshot.val();
+  
+          if (!data) {
+            // QR code not found
+            toast.error("QR not found");
+            sessionStorage.removeItem("tempTag");
             setBTnloader(false);
-            toast.error("First and last name should not be empty");
             return;
           }
-          const getCurrentDate = () => {
-            const currentDate = new Date();
-            const options = { day: "2-digit", month: "short", year: "numeric" };
-            return currentDate.toLocaleDateString("en-US", options);
-          };
-          const formattedDate = getCurrentDate();
-          const returnIfHttps = (string) => {
-            if (string != "") {
-              if (string.slice(0, 4) === "http") {
-                return true;
-              } else {
-                return false;
-              }
-            } else {
-              return true;
-            }
-          };
-          try {
-            let downloadURL = "";
-            if (tempimg) {
-              if (!returnIfHttps(tempimg)) {
-                const uniqueNum = Date.now();
-                const name = "userprofileimg" + uniqueNum;
-                const storageRef = sRef(storage, name);
-                await uploadString(storageRef, tempimg.slice(23), "base64", {
-                  contentType: "image/png",
-                });
-                downloadURL = await getDownloadURL(storageRef);
-              } else {
-                downloadURL = tempimg;
-              }
-            }
-            let downloadTumbnialURL = "";
-            if (linkimg) {
-              if (!returnIfHttps(linkimg)) {
-                const uniqueNum = Date.now();
-                const name = "linktumbnail" + uniqueNum;
-                const storageRef = sRef(storage, name);
-                await uploadString(storageRef, linkimg.slice(23), "base64", {
-                  contentType: "image/png",
-                });
-                downloadTumbnialURL = await getDownloadURL(storageRef);
-              } else {
-                downloadTumbnialURL = tempimg;
-              }
-            }
-
-            const contactsRef = ref(db, "Profile");
-            const newContactRef = push(contactsRef);
-            const pushKey = newContactRef.key;
-
-            const updates = {
-              userId: currentUser,
-              id: pushKey,
-              firstName: firstName,
-              lastName: lastName,
-              title: title,
-              relationship: relationship,
-              veteran: veteran ? veteran : false,
-              headingText: headingtext,
-              includeHeadline: includeHeadline ? includeHeadline : false,
-              linkObituary: linkObituary,
-              userProfile: downloadURL,
-              bioInformation: bioinformation,
-              birthDate: formatDate(birthdate),
-              deathDate: formatDate(deathdate),
-              city: city,
-              state: state,
-              quoteSection: quotesection,
-              createdDate: formattedDate,
-              tagId: "",
-              tags: [mytag],
-              postPrivate: "",
-              cemeteryName: "",
-              cemeteryPlot: "",
-              cemeteryCity: "",
-              cemeteryState: "",
-              cemeteryLocation: "",
-              donationsUrl: "",
-              timeline: "",
-              imageMedia: "",
-              videoMedia: "",
-              voiceMedia: "",
-              favoriteProfile: false,
-              linkTitle: linkTitle,
-              linkUrl: linkUrl,
-              linkThumbnail: downloadTumbnialURL,
-            };
-            await Promise.all([
-              update(newContactRef, updates),
-              update(ref(db, `Tags/${theTagData?.id}`), {
-                status: true,
-                userid: pushKey,
-              }),
-            ]);
-            // toast.success("Form Submit successfully!");
+  
+          const theTagData = Object.values(data)?.[0];
+  
+          if (theTagData?.status) {
+            // QR code is already assigned
+            toast.error("This QR is already assigned to some other medallion");
             sessionStorage.removeItem("tempTag");
-            // nevigate(`/viewprofile/${mytag}`);
-            localStorage.setItem("tag", mytag);
-            // setActiveQrMode(false);
             setBTnloader(false);
-            handleback();
-            setFirstName("");
-            setLastName("");
-            setTitle("");
-            setRelationship("");
-            setVeteran("");
-            setHeadingtext("");
-            setIncludeHeadline("");
-            setLinkObituary("");
-            setBioinformation("");
-            setBirthdate("");
-            setDeathdate("");
-            setCity("");
-            setstate("");
-            setQuotesection("");
-            settempimg("");
-            toast.success("New Meddallion created successfuly");
-          } catch (error) {
-            console.error("Error adding contact:", error);
-            toast.error("");
+            return;
           }
-        } else {
-          // toast.error("This QR is already assigned to some other medallion");
+  
+          if (!firstName || !lastName) {
+            // First and last names are required
+            toast.error("First and last name should not be empty");
+            setBTnloader(false);
+            return;
+          }
+  
+          // Proceed with the rest of the logic
+          const formattedDate = new Date().toLocaleDateString("en-US", {
+            day: "2-digit",
+            month: "short",
+            year: "numeric",
+          });
+  
+          let downloadURL = "";
+          if (tempimg) {
+            const isHttps = tempimg.startsWith("http");
+            if (!isHttps) {
+              const uniqueNum = Date.now();
+              const name = `userprofileimg${uniqueNum}`;
+              const storageRef = sRef(storage, name);
+              await uploadString(storageRef, tempimg.slice(23), "base64", {
+                contentType: "image/png",
+              });
+              downloadURL = await getDownloadURL(storageRef);
+            } else {
+              downloadURL = tempimg;
+            }
+          }
+  
+          let downloadThumbnailURL = "";
+          if (linkimg) {
+            const isHttps = linkimg.startsWith("http");
+            if (!isHttps) {
+              const uniqueNum = Date.now();
+              const name = `linkthumbnail${uniqueNum}`;
+              const storageRef = sRef(storage, name);
+              await uploadString(storageRef, linkimg.slice(23), "base64", {
+                contentType: "image/png",
+              });
+              downloadThumbnailURL = await getDownloadURL(storageRef);
+            } else {
+              downloadThumbnailURL = linkimg;
+            }
+          }
+  
+          const contactsRef = ref(db, "Profile");
+          const newContactRef = push(contactsRef);
+          const pushKey = newContactRef.key;
+  
+          const updates = {
+            userId: currentUser,
+            id: pushKey,
+            firstName,
+            lastName,
+            title,
+            relationship,
+            veteran: veteran || false,
+            headingText: headingtext,
+            includeHeadline: includeHeadline || false,
+            linkObituary,
+            userProfile: downloadURL,
+            bioInformation: bioinformation,
+            birthDate: formatDate(birthdate),
+            deathDate: formatDate(deathdate),
+            city,
+            state,
+            quoteSection: quotesection,
+            createdDate: formattedDate,
+            tagId: "",
+            tags: [mytag],
+            postPrivate: "",
+            cemeteryName: "",
+            cemeteryPlot: "",
+            cemeteryCity: "",
+            cemeteryState: "",
+            cemeteryLocation: "",
+            donationsUrl: "",
+            timeline: "",
+            imageMedia: "",
+            videoMedia: "",
+            voiceMedia: "",
+            favoriteProfile: false,
+            linkTitle,
+            linkUrl,
+            linkThumbnail: downloadThumbnailURL,
+          };
+  
+          await Promise.all([
+            update(newContactRef, updates),
+            update(ref(db, `Tags/${theTagData?.id}`), {
+              status: true,
+              userid: pushKey,
+            }),
+          ]);
+  
+          toast.success("New Medallion created successfully");
           sessionStorage.removeItem("tempTag");
-        }
-      } else {
-        toast.error("QR not found");
-        sessionStorage.removeItem("tempTag");
-        setBTnloader(false);
-      }
-    });
+          localStorage.setItem("tag", mytag);
+          handleback();
+  
+          // Clear state
+          setFirstName("");
+          setLastName("");
+          setTitle("");
+          setRelationship("");
+          setVeteran("");
+          setHeadingtext("");
+          setIncludeHeadline("");
+          setLinkObituary("");
+          setBioinformation("");
+          setBirthdate("");
+          setDeathdate("");
+          setCity("");
+          setstate("");
+          setQuotesection("");
+          settempimg("");
+  
+          setBTnloader(false);
+        },
+        { onlyOnce: true } // Ensure this listener triggers only once
+      );
+    } catch (error) {
+      toast.error("An error occurred while submitting the form");
+      console.error("Error:", error);
+      setBTnloader(false);
+    }
   };
+  
   let handleopenshare = () => {
     formatDate();
   };

@@ -66,7 +66,7 @@ export default function Sidebar({
               <img className="w-[25px]" src={user} />
               <p className="Satoshi-bold text-[14px] ml-2">My Account</p>
             </div>
-            <div
+            {/* <div
               className="flex justify-start cursor-pointer items-center mt-5  border-b border-[#DAEAE8] pb-5 w-[100%]"
               // onClick={() =>
               //   window.open("https://sentiments.co/collections/all")
@@ -74,18 +74,18 @@ export default function Sidebar({
             >
               <img className="w-[25px]" src={store} />
               <p className="Satoshi-bold text-[14px] ml-2">Vist Store</p>
-            </div>
+            </div> */}
             {/* <div className="flex justify-start cursor-pointer items-center mt-5  border-b border-[#DAEAE8] pb-5 w-[100%]">
               <img className="w-[25px]" src={update} />
               <p className="Satoshi-bold text-[14px] ml-2">Updates</p>
             </div> */}
-            <div
+            {/* <div
               className="flex justify-start cursor-pointer items-center mt-5  border-b border-[#DAEAE8] pb-5 w-[100%]"
-              // onClick={() => window.open("https://sentiments.co/pages/faq")}
+            // onClick={() => window.open("https://sentiments.co/pages/faq")}
             >
               <img className="w-[25px]" src={help} />
               <p className="Satoshi-bold text-[14px] ml-2">Help Center</p>
-            </div>
+            </div> */}
             <div
               onClick={handlemodal}
               className="flex justify-start cursor-pointer items-center mt-5  pb-5 w-[100%]"

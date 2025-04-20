@@ -52,7 +52,20 @@ export default function Timeline({toast}) {
       setCurrentEvent(null);
     };
   
-
+    const formatDateWithTimeZone = (dateString, timeZone = "UTC") => {
+      const date = new Date(dateString); // Parse input date
+      return new Intl.DateTimeFormat("en-US", {
+        timeZone,
+        year: "numeric",
+        month: "short",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+        hour12: false,
+      }).format(date);
+    };
+  
 
 
     const getSingleChild = () => {
@@ -145,6 +158,7 @@ setEventProfile("")
 const [timeline, setTimeline] = useState([]);
  
 const handleAddTimeline = async (timeline) => {
+  console.log(timeline)
   if(!timelineTitle){
     toast.error("Title are required.")
     return;
@@ -206,7 +220,7 @@ const handleRemoveImage = () => {
 const formatdate = (dateString) => {
   const date = new Date(dateString);
   const options = { day: '2-digit', month: 'short', year: 'numeric' };
-  return date.toLocaleDateString('en-US', options);
+  return date.toLocaleDateString(undefined, options); // `undefined` uses the default system locale
 };
 const arrytimeline = [
   { year: '2022', event: '25th Wedding Anniversary in Maui on February 01', image: couple },
@@ -235,8 +249,8 @@ const handleEditcurentevent = (post) => {
   setEditModal(true);
   handleClose();
 };
-
-const handleEditEvent = () => {
+console.log(editTimelineimage)
+const handleEditEvent = async () => {
   if (!edittimelineTitle) {
     toast.error("Title is required.");
     return;
@@ -245,72 +259,91 @@ const handleEditEvent = () => {
     toast.error("Date is required.");
     return;
   }
-  if (!editTimelineimage) {
-    toast.error("Image is required.");
-    return;
-  }
-  const designformatdate = (dateString) => {
-    const date = new Date(dateString);
-    const options = { day: '2-digit', month: 'short', year: 'numeric' };
-    return date.toLocaleDateString('en-US', options);
-  };
-  setBTnloader(true);
 
-  // Convert base64 image to a Blob
-  const byteCharacters = atob(editTimelineimage.split(",")[1]);
-  const byteNumbers = new Array(byteCharacters.length);
-  for (let i = 0; i < byteCharacters.length; i++) {
-    byteNumbers[i] = byteCharacters.charCodeAt(i);
-  }
-  const byteArray = new Uint8Array(byteNumbers);
-  const blob = new Blob([byteArray], { type: 'image/png' });
+  try {
+    setBTnloader(true);
 
-  // Generate a unique name for the image
-  let imageName = new Date().getTime() + '_edittimeline.png'; // Example name generation
+    let uploadedImageUrl = editTimelineimage || ""; // Use existing image URL if no new image is uploaded
 
-  // Reference to Firebase Storage
-  const storageRef = sRef(storage, `timelineImages/${imageName}`);
+    if (editTimelineimage && editTimelineimage.startsWith("data:image")) {
+      // Convert Base64 to Uint8Array
+      const base64Data = editTimelineimage.split(",")[1]; // Remove "data:image/png;base64,"
+      const bytes = Uint8Array.from(atob(base64Data), (c) => c.charCodeAt(0));
 
-  // Upload image to Firebase Storage
-  uploadBytes(storageRef, blob)
-    .then(() => {
+      // Generate a unique name for the image
+      const uniqueNum = Date.now();
+      const imageName = `timelineImages/${uniqueNum}_edittimeline.png`;
+
+      // Reference to Firebase Storage
+      const storageRef = sRef(storage, imageName);
+
+      // Upload image to Firebase Storage
+      await uploadBytes(storageRef, bytes, { contentType: "image/png" });
+
       // Get download URL of the uploaded image
-      getDownloadURL(storageRef)
-        .then(URL => {
-          // Format date for display
-          const formattedDate = designformatdate(edittimelineDate);
+      uploadedImageUrl = await getDownloadURL(storageRef);
+    }
 
-          // Update the event data in Firebase Realtime Database
-          const postRef = ref(db, `Profile/${id}/timeline/${editTimlineId}`);
-          const updatedPost = {
-            id: editTimlineId,
-            timelineTitle: edittimelineTitle,
-            timelineDate: formattedDate,
-            timelineImage: URL, // Update with the download URL
-          };
+    // Format the date
+    const formatDate = (dateString) => {
+      const date = new Date(dateString);
+      const options = { day: '2-digit', month: 'short', year: 'numeric' };
+      return date.toLocaleDateString(undefined, options); // `undefined` uses the default system locale
+    };
+    
 
-          // Update data in Firebase Realtime Database
-          set(postRef, updatedPost)
-            .then(() => {
-              toast.success("Event updated successfully");
-              setEvents(prevEvents => prevEvents.map(event => event.id === editTimlineId ? updatedPost : event));
-              setEditModal(false);
-              setBTnloader(false);
-            })
-            .catch(error => {
-              toast.error("Failed to update event: " + error.message);
-            });
-        })
-        .catch(error => {
-          toast.error("Failed to get download URL: " + error.message);
-        });
-    })
-    .catch(error => {
-      toast.error("Failed to upload image: " + error.message);
-    });
+    const formattedDate = formatDate(edittimelineDate);
+
+    // Reference to Firebase Realtime Database
+    const postRef = ref(db, `Profile/${id}/timeline/${editTimlineId}`);
+
+    // Updated post data
+    const updatedPost = {
+      id: editTimlineId,
+      timelineTitle: edittimelineTitle,
+      timelineDate: formatDateWithTimeZone(edittimelineDate, "UTC"),
+      timelineImage: uploadedImageUrl, // Use new or existing image URL
+    };
+
+    // Update event in Firebase Realtime Database
+    await set(postRef, updatedPost);
+
+    // Update local state
+    setEvents((prevEvents) =>
+      prevEvents.map((event) =>
+        event.id === editTimlineId ? updatedPost : event
+      )
+    );
+
+    toast.success("Event updated successfully");
+    setEditModal(false);
+  } catch (error) {
+    toast.error("Failed to update event: " + error.message);
+  } finally {
+    setBTnloader(false);
+  }
 };
+function formatDateToLocale(dateInput, timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone) {
+  try {
+    // Parse the string into a Date object
+    const date = new Date(dateInput);
+    
+    // Validate if the Date object is valid
+    if (isNaN(date.getTime())) {
+      throw new Error('Invalid date format');
+    }
 
+    const options = { year: 'numeric', month: 'short', day: '2-digit', timeZone };
+    const formatter = new Intl.DateTimeFormat('en-US', options);
 
+    return formatter.format(date);
+  } catch (error) {
+    console.error('Invalid date:', error);
+    return null;
+  }
+}
+
+console.log(edittimelineDate)
 ///////////end edit timeline////////////
 
 
@@ -341,8 +374,20 @@ const formatDate = (timestamp) => {
   const month = String(date.getMonth() + 1).padStart(2, '0'); // Months are zero-indexed
   const day = String(date.getDate()).padStart(2, '0');
   return `${year}-${month}-${day}`;
+}; 
+ const formatDateNew = (dateString) => {
+  const date = new Date(dateString); // Parse input date
+  return date.toLocaleDateString("en-US", {
+    month: "short",  // Short month name like 'Dec'
+    day: "2-digit", // Two-digit day number
+    year: "numeric" // Full year number
+  });
 };
-
+const formatDateChange = (dateString) => {
+  if (!dateString) return "";
+  const date = new Date(dateString); // Parse input date
+  return date.toISOString().split('T')[0]; // Convert to 'YYYY-MM-DD' format
+};
   return (
     <>
     {loading ? (
@@ -363,33 +408,37 @@ const formatDate = (timestamp) => {
   <div className='flex justify-start flex-col w-[90%] mt-5'>
   <div className='text-[16px] text-[#062A27] font-bold Satoshi-bold '>SIGNIFICANT EVENTS</div>
   <div>
-  {events.map((item, index) => (
-    <div key={index} className='flex justify-start w-[100%] mt-3 flex-col'>
-      <div className='w-[100%] flex justify-between '>
-        <div className='w-[100px] h-[30px] font-bold Satoshi-bold flex justify-center text-[12px] whitespace-nowrap items-center rounded-[5px] bg-[#D3E8E6]'>
-          {item?.timelineDate}
+  {events
+    ?.slice() // Creates a shallow copy to avoid mutating the original array
+    .sort((a, b) => new Date(a?.timelineDate) - new Date(b?.timelineDate)) // Sort by date
+    .map((item, index) => (
+      <div key={index} className="flex justify-start w-[100%] mt-3 flex-col">
+        <div className="w-[100%] flex justify-between">
+          <div className="w-[100px] h-[30px] font-bold Satoshi-bold flex justify-center text-[12px] whitespace-nowrap items-center rounded-[5px] bg-[#D3E8E6]">
+            {formatDateNew(item?.timelineDate)}
+          </div>
+          <div className="w-[100px] flex justify-end">
+            <FiMoreVertical
+              onClick={(e) => handleClick(e, item?.id)}
+              className="text-[#5F6161] text-[20px] font-bold"
+            />
+          </div>
         </div>
-        <div className='w-[100px] flex justify-end'>
-          <FiMoreVertical
-            onClick={(e) => handleClick(e, item.id)}
-            className='text-[#5F6161] text-[20px] font-bold'
+        <div
+          onClick={() => handleSingleTimelineClick(item)}
+          className="cursor-pointer flex justify-start mt-4 h-[65px] items-center border-l border-dashed border-[#5F6161]"
+        >
+          <img
+            className="w-[53px] ml-3 h-[53px] rounded-[4px] object-cover"
+            src={item?.timelineImage || "https://placehold.co/53"}
           />
+          <p className="text-[#5F6161] ml-3 h-[60px] overflow-y-auto">
+            {item?.timelineTitle}
+          </p>
         </div>
       </div>
-      <div
-        onClick={() => handleSingleTimelineClick(item)}
-        className='cursor-pointer flex justify-start mt-4 h-[65px] items-center border-l border-dashed border-[#5F6161]'
-      >
-        <img
-          className='w-[53px] ml-3 h-[53px] rounded-[4px] object-cover'
-          src={item?.timelineImage?item?.timelineImage:"https://placehold.co/53"}
-        />
-        <p className='text-[#5F6161] ml-3 h-[60px] overflow-y-auto'>
-          {item?.timelineTitle}
-        </p>
-      </div>
-    </div>
-  ))}
+    ))}
+  
   
   </div>
   </div>
@@ -514,7 +563,7 @@ const formatDate = (timestamp) => {
       {
         id: "",
         timelineTitle: timelineTitle,
-        timelineDate:formatdate(timelineDate),
+        timelineDate:formatDateWithTimeZone(timelineDate, "UTC"),
         timelineImage:eventprofile ,
         timeStamp: new Date().toISOString()
       },
@@ -638,7 +687,7 @@ aria-describedby="edit-event-modal-description"
             <label>Date:</label>
             <input
                 type='date'
-                value={formatDate(edittimelineDate)}
+                value={formatDateChange(edittimelineDate)}
                 onChange={(e) => setEdittimelineDate(e.target.value)}
                 className='w-[100%] outline-none border border-[#C9C9C9] h-[35px] rounded-[5px] pl-3 pr-3'
             />
