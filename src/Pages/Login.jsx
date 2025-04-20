@@ -6,19 +6,9 @@ import { Link, useNavigate } from "react-router-dom";
 import { Slide, ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import {
-  GoogleAuthProvider,
   signInWithEmailAndPassword,
-  signInWithPopup,
 } from "firebase/auth";
-import { auth, db } from "../Firebase/firebaseConfig";
-import {
-  equalTo,
-  onValue,
-  orderByChild,
-  query,
-  ref,
-  set,
-} from "firebase/database";
+import { auth } from "../Firebase/firebaseConfig";
 import { useDispatch } from "react-redux";
 import { setUser } from "../Redux/userSlice";
 import logo from "../images/logo.svg";
@@ -55,49 +45,7 @@ export default function Login() {
       toast.error("Email and password should not be empty!");
     }
   };
-  const provider = new GoogleAuthProvider();
 
-  const handleSignUpGoogle = () => {
-    signInWithPopup(auth, provider)
-      .then((response) => {
-        console.log(response, "this is the console of response");
-        localStorage.setItem("userId", response?.user?.uid);
-        // Query user data
-        const deviceRef = query(
-          ref(db, "/User"),
-          orderByChild("id"),
-          equalTo(response?.user?.uid)
-        );
-
-        onValue(deviceRef, (snapshot) => {
-          const userData = snapshot.val();
-          console.log(userData);
-
-          if (!userData) {
-            // User doesn't exist in database, create a new entry
-            set(ref(db, "User/" + response?.user?.uid), {
-              email: response?.user?.email,
-              id: response?.user?.uid,
-              firstName: response?.user?.displayName,
-              profileImage: response?.user?.photoURL,
-              state: "",
-              fcmToken: "",
-              city: "",
-              muteNotificiation: "",
-            });
-          }
-        });
-
-        // Redirect to home page
-        toast.success("Login successful");
-        setTimeout(() => {
-          nevigate("/home");
-        }, 2000);
-      })
-      .catch((error) => {
-        console.log(error.message);
-      });
-  };
   return (
     <>
       <div className="flex  items-center justify-center flex-col w-[100%] min-h-[100vh] bg-[#f0f0f0]">
@@ -156,19 +104,6 @@ export default function Login() {
           >
             Log In
           </button>
-          <div
-            className="w-[90%] cursor-pointer flex bg-[#062A27] Satoshi-bold text-white justify-between items-center outline-none border border-[#C9C9C9]  h-[45px] rounded-[30px] pl-1"
-            onClick={() => handleSignUpGoogle()}
-          >
-            <img
-              width="35"
-              height="35"
-              src="https://img.icons8.com/color/96/google-logo.png"
-              alt="google-logo"
-            />
-            <div>Log In with Google</div>
-            <p className="w-[10%]"></p>
-          </div>
           <p className="mt-3 text-[16px] mb-5">
             Dont have an account?{" "}
             <Link
@@ -183,7 +118,7 @@ export default function Login() {
       </div>
       <ToastContainer
         position="top-center"
-        autoClose={2000} // Auto close after 3 seconds
+        autoClose={2000}
         hideProgressBar={false}
         newestOnTop={false}
         closeOnClick
@@ -191,7 +126,7 @@ export default function Login() {
         pauseOnFocusLoss
         draggable
         pauseOnHover
-        transition={Slide} // Optional transition effect
+        transition={Slide}
       />
     </>
   );
