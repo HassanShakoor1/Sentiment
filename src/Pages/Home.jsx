@@ -314,7 +314,7 @@ export default function Home() {
             </h1>
             <div className="flex items-center justify-center mt-3">
               <img width={15} src={email} />
-              <p className="ml-1 text-[14px]">hassan.shakoor@icloud.com</p>
+              <p className="ml-1 text-[14px]">{userdata?.email}</p>
             </div>
             {/* <div className='flex items-center justify-center mt-3'>
     <img width={15} src={Location}/>
