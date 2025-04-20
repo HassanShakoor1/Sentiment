@@ -64,7 +64,7 @@ export default function Share({ toast, qrUrl }) {
     const copyToClipboard = () => {
         navigator.clipboard.writeText(fullQrUrl)
             .then(() => {
-                console.log('QR URL copied to clipboard:', fullQrUrl);
+                console.log('QR URL copied to the clipboard:', fullQrUrl);
                 toast.success("Copied!");
             })
             .catch((error) => {
