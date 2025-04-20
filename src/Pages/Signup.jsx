@@ -1,28 +1,21 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import img from "../images/Group.png";
 import { FaRegEyeSlash } from "react-icons/fa";
 import { MdOutlineRemoveRedEye } from "react-icons/md";
-import { Link, useNavigate, useParams } from "react-router-dom";
-import firebase from "firebase/compat/app";
+import { Link, useNavigate } from "react-router-dom";
 import {
-  GoogleAuthProvider,
   createUserWithEmailAndPassword,
-  signInWithPopup,
 } from "firebase/auth";
-import { auth, db, firebaseConfig } from "../Firebase/firebaseConfig";
+import { auth, db } from "../Firebase/firebaseConfig";
 import { Slide, ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import {
-  equalTo,
-  onValue,
-  orderByChild,
-  query,
   ref,
   update,
 } from "firebase/database";
 import logo from "../images/logo.svg";
+
 export default function Signup() {
-  const { id } = useParams();
   const [showPassword, setShowPassword] = useState(true);
   const [Password, setPassword] = useState(true);
   const [firstName, setFirstName] = useState("");
@@ -31,10 +24,6 @@ export default function Signup() {
   const [password, setPasswordValue] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const nevigate = useNavigate();
-
-  // useEffect(() => {
-
-  // }, []);
 
   const handleSignup = async () => {
     if (!firstName || !lastName) {
@@ -111,50 +100,6 @@ export default function Signup() {
         toast.error("Password must be at least 8 characters");
       }
     }
-  };
-
-  const provider = new GoogleAuthProvider();
-
-  const handleSignUpGoogle = () => {
-    signInWithPopup(auth, provider)
-      .then((response) => {
-        console.log(response, "this is the console of response");
-        localStorage.setItem("userId", response?.user?.uid);
-        // Query user data
-        const deviceRef = query(
-          ref(db, "/User"),
-          orderByChild("id"),
-          equalTo(response?.user?.uid)
-        );
-
-        onValue(deviceRef, (snapshot) => {
-          const userData = snapshot.val();
-          console.log(userData);
-
-          if (!userData) {
-            // User doesn't exist in database, create a new entry
-            set(ref(db, "User/" + response?.user?.uid), {
-              email: response?.user?.email,
-              id: response?.user?.uid,
-              firstName: response?.user?.displayName,
-              profileImage: response?.user?.photoURL,
-              state: "",
-              fcmToken: "",
-              city: "",
-              muteNotificiation: "",
-            });
-          }
-        });
-
-        // Redirect to home page
-        // toast.success("Login successful");
-        setTimeout(() => {
-          nevigate("/home");
-        }, 2000);
-      })
-      .catch((error) => {
-        console.log(error.message);
-      });
   };
 
   return (
@@ -241,19 +186,6 @@ export default function Signup() {
           >
             Register
           </button>
-          <div
-            className="w-[90%] cursor-pointer flex bg-[#062A27] Satoshi-bold text-white justify-between items-center outline-none border border-[#C9C9C9]  h-[45px] rounded-[30px] pl-1 mt-3"
-            onClick={() => handleSignUpGoogle()}
-          >
-            <img
-              width="35"
-              height="35"
-              src="https://img.icons8.com/color/96/google-logo.png"
-              alt="google-logo"
-            />
-            <div>Sign Up with Google</div>
-            <p className="w-[10%]"></p>
-          </div>
           <p className="mt-3 text-[16px] mb-5">
             Already have an account?{" "}
             <Link
@@ -268,7 +200,7 @@ export default function Signup() {
       </div>
       <ToastContainer
         position="top-center"
-        autoClose={2000} // Auto close after 3 seconds
+        autoClose={2000}
         hideProgressBar={false}
         newestOnTop={false}
         closeOnClick
@@ -276,7 +208,7 @@ export default function Signup() {
         pauseOnFocusLoss
         draggable
         pauseOnHover
-        transition={Slide} // Optional transition effect
+        transition={Slide}
       />
     </>
   );
