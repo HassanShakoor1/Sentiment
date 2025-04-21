@@ -221,151 +221,172 @@ export default function Chatbot({ userProfile, isActive }) {
           const timelineSnapshot = await get(timelineRef);
           const timelineData = timelineSnapshot.val() || {};
 
-          let timelineArray;
-          
-          // Handle different timeline data structures
+          // Convert timeline data to array and ensure proper structure
+          let timelineArray = [];
           if (Array.isArray(timelineData)) {
             timelineArray = timelineData;
           } else if (typeof timelineData === 'object' && timelineData !== null) {
-            timelineArray = Object.values(timelineData);
-          } else {
-            timelineArray = [];
+            // Handle both object with numeric keys and object with string keys
+            timelineArray = Object.entries(timelineData).map(([key, value]) => {
+              // If the value is already an object with timeline properties, use it as is
+              if (value && typeof value === 'object' && 'timelineDate' in value) {
+                return value;
+              }
+              // Otherwise, use the key as the ID and the value as the event data
+              return {
+                id: key,
+                ...value
+              };
+            });
           }
-          
-          if (timelineArray.length > 0) {
-            const sortedEvents = timelineArray
-              .filter(event => {
-                // Validate event data
-                if (!event || !event.timelineDate || !event.timelineTitle) return false;
-                
-                // Validate date format
-                const date = new Date(event.timelineDate);
-                return !isNaN(date.getTime());
-              })
-              .sort((a, b) => {
-                const dateA = new Date(a.timelineDate);
-                const dateB = new Date(b.timelineDate);
-                return dateA - dateB;
-              });
 
-            if (sortedEvents.length > 0) {
-              // Check for specific event queries
-              if (userMessage.includes('job') || userMessage.includes('work') || 
-                  userMessage.includes('start') || userMessage.includes('career')) {
-                const jobEvent = sortedEvents.find(event => 
-                  event.timelineTitle.toLowerCase().includes('job') || 
-                  event.timelineTitle.toLowerCase().includes('work') ||
-                  event.timelineTitle.toLowerCase().includes('career') ||
-                  event.timelineTitle.toLowerCase().includes('employee')
-                );
-                
-                if (jobEvent) {
-                  const date = new Date(jobEvent.timelineDate);
-                  const formattedDate = date.toLocaleDateString('en-US', {
-                    year: 'numeric',
-                    month: 'short',
-                    day: 'numeric'
-                  });
-                  setMessages(prev => [...prev, { 
-                    text: `He started his new job on ${formattedDate}: ${jobEvent.timelineTitle}`, 
-                    sender: 'bot' 
-                  }]);
-                } else {
-                  setMessages(prev => [...prev, { 
-                    text: "I couldn't find specific information about when he started his job.", 
-                    sender: 'bot' 
-                  }]);
-                }
-              } else if (userMessage.includes('fyp')) {
-                const fypEvent = sortedEvents.find(event => 
-                  event.timelineTitle.toLowerCase().includes('fyp')
-                );
-                
-                if (fypEvent) {
-                  const date = new Date(fypEvent.timelineDate);
-                  const formattedDate = date.toLocaleDateString('en-US', {
-                    year: 'numeric',
-                    month: 'short',
-                    day: 'numeric'
-                  });
-                  setMessages(prev => [...prev, { 
-                    text: `He completed his FYP on ${formattedDate}: ${fypEvent.timelineTitle}`, 
-                    sender: 'bot' 
-                  }]);
-                } else {
-                  setMessages(prev => [...prev, { 
-                    text: "I couldn't find specific information about the FYP completion.", 
-                    sender: 'bot' 
-                  }]);
-                }
-              } else if (userMessage.includes('education') || userMessage.includes('complete') || 
-                  userMessage.includes('graduation')) {
-                const educationEvent = sortedEvents.find(event => 
-                  event.timelineTitle.toLowerCase().includes('education') || 
-                  event.timelineTitle.toLowerCase().includes('complete') ||
-                  event.timelineTitle.toLowerCase().includes('graduation')
-                );
-                
-                if (educationEvent) {
-                  const date = new Date(educationEvent.timelineDate);
-                  const formattedDate = date.toLocaleDateString('en-US', {
-                    year: 'numeric',
-                    month: 'short',
-                    day: 'numeric'
-                  });
-                  setMessages(prev => [...prev, { 
-                    text: `He completed his education on ${formattedDate}: ${educationEvent.timelineTitle}`, 
-                    sender: 'bot' 
-                  }]);
-                } else {
-                  setMessages(prev => [...prev, { 
-                    text: "I couldn't find specific information about the education completion.", 
-                    sender: 'bot' 
-                  }]);
-                }
-              } else if (userMessage.includes('employee') || userMessage.includes('month')) {
-                const employeeEvent = sortedEvents.find(event => 
-                  event.timelineTitle.toLowerCase().includes('employee') || 
-                  event.timelineTitle.toLowerCase().includes('month')
-                );
-                
-                if (employeeEvent) {
-                  const date = new Date(employeeEvent.timelineDate);
-                  const formattedDate = date.toLocaleDateString('en-US', {
-                    year: 'numeric',
-                    month: 'short',
-                    day: 'numeric'
-                  });
-                  setMessages(prev => [...prev, { 
-                    text: `He received Employee of the Month on ${formattedDate}: ${employeeEvent.timelineTitle}`, 
-                    sender: 'bot' 
-                  }]);
-                } else {
-                  setMessages(prev => [...prev, { 
-                    text: "I couldn't find specific information about the Employee of the Month award.", 
-                    sender: 'bot' 
-                  }]);
-                }
-              } else {
-                // Show all timeline events
-                const botResponse = sortedEvents
-                  .map(event => {
-                    const date = new Date(event.timelineDate);
-                    const formattedDate = date.toLocaleDateString('en-US', {
-                      year: 'numeric',
-                      month: 'short',
-                      day: 'numeric'
-                    });
-                    return `${formattedDate}\n${event.timelineTitle}`;
-                  })
-                  .join('\n\n');
+          // Filter and sort events
+          const sortedEvents = timelineArray
+            .filter(event => {
+              // Validate required fields
+              if (!event || typeof event !== 'object') return false;
+              
+              // Check for both possible date field names
+              const date = event.timelineDate || event.date;
+              const title = event.timelineTitle || event.title;
+              
+              if (!date || !title) return false;
+              
+              // Validate date format
+              const parsedDate = new Date(date);
+              return !isNaN(parsedDate.getTime());
+            })
+            .map(event => ({
+              // Normalize event structure
+              timelineDate: event.timelineDate || event.date,
+              timelineTitle: event.timelineTitle || event.title,
+              timelineImage: event.timelineImage || event.image
+            }))
+            .sort((a, b) => {
+              const dateA = new Date(a.timelineDate);
+              const dateB = new Date(b.timelineDate);
+              return dateA - dateB;
+            });
+
+          if (sortedEvents.length > 0) {
+            // Check for specific event queries
+            if (userMessage.includes('job') || userMessage.includes('work') || 
+                userMessage.includes('start') || userMessage.includes('career')) {
+              const jobEvent = sortedEvents.find(event => {
+                const title = event.timelineTitle.toLowerCase();
+                return title.includes('job') || 
+                       title.includes('work') ||
+                       title.includes('career') ||
+                       title.includes('employee') ||
+                       title.includes('start');
+              });
+              
+              if (jobEvent) {
+                const date = new Date(jobEvent.timelineDate);
+                const formattedDate = date.toLocaleDateString('en-US', {
+                  year: 'numeric',
+                  month: 'short',
+                  day: 'numeric'
+                });
                 setMessages(prev => [...prev, { 
-                  text: `SIGNIFICANT EVENTS\n\n${botResponse}`, 
+                  text: `He started his new job on ${formattedDate}: ${jobEvent.timelineTitle}`, 
+                  sender: 'bot' 
+                }]);
+              } else {
+                setMessages(prev => [...prev, { 
+                  text: "I couldn't find specific information about when he started his job.", 
+                  sender: 'bot' 
+                }]);
+              }
+            } else if (userMessage.includes('fyp')) {
+              const fypEvent = sortedEvents.find(event => 
+                event.timelineTitle.toLowerCase().includes('fyp')
+              );
+              
+              if (fypEvent) {
+                const date = new Date(fypEvent.timelineDate);
+                const formattedDate = date.toLocaleDateString('en-US', {
+                  year: 'numeric',
+                  month: 'short',
+                  day: 'numeric'
+                });
+                setMessages(prev => [...prev, { 
+                  text: `He completed his FYP on ${formattedDate}: ${fypEvent.timelineTitle}`, 
+                  sender: 'bot' 
+                }]);
+              } else {
+                setMessages(prev => [...prev, { 
+                  text: "I couldn't find specific information about the FYP completion.", 
+                  sender: 'bot' 
+                }]);
+              }
+            } else if (userMessage.includes('education') || userMessage.includes('complete') || 
+                userMessage.includes('graduation')) {
+              const educationEvent = sortedEvents.find(event => {
+                const title = event.timelineTitle.toLowerCase();
+                return title.includes('education') || 
+                       title.includes('complete') ||
+                       title.includes('graduation');
+              });
+              
+              if (educationEvent) {
+                const date = new Date(educationEvent.timelineDate);
+                const formattedDate = date.toLocaleDateString('en-US', {
+                  year: 'numeric',
+                  month: 'short',
+                  day: 'numeric'
+                });
+                setMessages(prev => [...prev, { 
+                  text: `He completed his education on ${formattedDate}: ${educationEvent.timelineTitle}`, 
+                  sender: 'bot' 
+                }]);
+              } else {
+                setMessages(prev => [...prev, { 
+                  text: "I couldn't find specific information about the education completion.", 
+                  sender: 'bot' 
+                }]);
+              }
+            } else if (userMessage.includes('employee') || userMessage.includes('month')) {
+              const employeeEvent = sortedEvents.find(event => {
+                const title = event.timelineTitle.toLowerCase();
+                return title.includes('employee') || 
+                       title.includes('month');
+              });
+              
+              if (employeeEvent) {
+                const date = new Date(employeeEvent.timelineDate);
+                const formattedDate = date.toLocaleDateString('en-US', {
+                  year: 'numeric',
+                  month: 'short',
+                  day: 'numeric'
+                });
+                setMessages(prev => [...prev, { 
+                  text: `He received Employee of the Month on ${formattedDate}: ${employeeEvent.timelineTitle}`, 
+                  sender: 'bot' 
+                }]);
+              } else {
+                setMessages(prev => [...prev, { 
+                  text: "I couldn't find specific information about the Employee of the Month award.", 
                   sender: 'bot' 
                 }]);
               }
             } else {
-              setMessages(prev => [...prev, { text: "No timeline events are available in the profile.", sender: 'bot' }]);
+              // Show all timeline events
+              const botResponse = sortedEvents
+                .map(event => {
+                  const date = new Date(event.timelineDate);
+                  const formattedDate = date.toLocaleDateString('en-US', {
+                    year: 'numeric',
+                    month: 'short',
+                    day: 'numeric'
+                  });
+                  return `${formattedDate}\n${event.timelineTitle}`;
+                })
+                .join('\n\n');
+              setMessages(prev => [...prev, { 
+                text: `SIGNIFICANT EVENTS\n\n${botResponse}`, 
+                sender: 'bot' 
+              }]);
             }
           } else {
             setMessages(prev => [...prev, { text: "No timeline events are available in the profile.", sender: 'bot' }]);
