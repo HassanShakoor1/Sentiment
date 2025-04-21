@@ -55,11 +55,24 @@ export default function Timeline({toast}) {
     const formatDateWithTimeZone = (dateString, timeZone = "UTC") => {
       if (!dateString) return "";
       try {
-        // Parse the date string and ensure it's in a consistent format
-        const date = new Date(dateString);
+        let date;
+        if (typeof dateString === 'string') {
+          if (dateString.includes('T')) {
+            date = new Date(dateString);
+          } else {
+            const [year, month, day] = dateString.split('-').map(Number);
+            date = new Date(year, month - 1, day);
+          }
+        } else if (dateString instanceof Date) {
+          date = dateString;
+        } else {
+          return "";
+        }
+
         if (isNaN(date.getTime())) {
           return "";
         }
+
         return new Intl.DateTimeFormat("en-US", {
           timeZone,
           year: "numeric",
@@ -79,22 +92,27 @@ export default function Timeline({toast}) {
 
 
     const getSingleChild = () => {
-      setloading(true)
-      const starCountRef = ref(db, `Profile/${id}`)
-  
+      setloading(true);
+      const starCountRef = ref(db, `Profile/${id}`);
+
       onValue(starCountRef, async (snapshot) => {
         const data = await snapshot.val();
-        console.log(data);
-        console.log("testing data");
         if (data !== undefined && data !== null) {
-        setUserdata(data)
-        if (data?.timeline) {
-          setEvents((Object.values(data?.timeline)))
-        } else {
-          setEvents([]);
+          setUserdata(data);
+          if (data?.timeline) {
+            // Sort timeline events by date
+            const timelineArray = Object.values(data.timeline);
+            const sortedTimeline = timelineArray.sort((a, b) => {
+              const dateA = new Date(a.timelineDate);
+              const dateB = new Date(b.timelineDate);
+              return dateA - dateB;
+            });
+            setEvents(sortedTimeline);
+          } else {
+            setEvents([]);
+          }
         }
-        setloading(false)
-        }
+        setloading(false);
       });
     };
     useEffect(() => {
@@ -388,10 +406,24 @@ const formatDate = (timestamp) => {
  const formatDateNew = (dateString) => {
   if (!dateString) return "";
   try {
-    const date = new Date(dateString);
+    let date;
+    if (typeof dateString === 'string') {
+      if (dateString.includes('T')) {
+        date = new Date(dateString);
+      } else {
+        const [year, month, day] = dateString.split('-').map(Number);
+        date = new Date(year, month - 1, day);
+      }
+    } else if (dateString instanceof Date) {
+      date = dateString;
+    } else {
+      return "";
+    }
+
     if (isNaN(date.getTime())) {
       return "";
     }
+
     return date.toLocaleDateString("en-US", {
       month: "short",
       day: "2-digit",
@@ -405,11 +437,27 @@ const formatDate = (timestamp) => {
 const formatDateChange = (dateString) => {
   if (!dateString) return "";
   try {
-    // Parse the date string and ensure it's in a consistent format
-    const date = new Date(dateString);
+    // Handle different date formats
+    let date;
+    if (typeof dateString === 'string') {
+      // Handle ISO string format
+      if (dateString.includes('T')) {
+        date = new Date(dateString);
+      } else {
+        // Handle YYYY-MM-DD format
+        const [year, month, day] = dateString.split('-').map(Number);
+        date = new Date(year, month - 1, day);
+      }
+    } else if (dateString instanceof Date) {
+      date = dateString;
+    } else {
+      return "";
+    }
+
     if (isNaN(date.getTime())) {
       return "";
     }
+
     // Format the date as YYYY-MM-DD
     const year = date.getFullYear();
     const month = String(date.getMonth() + 1).padStart(2, '0');
@@ -420,6 +468,42 @@ const formatDateChange = (dateString) => {
     return "";
   }
 };
+
+// Add a new function to safely handle timeline data
+const getSafeTimelineData = (data) => {
+  if (!data || !Array.isArray(data)) return [];
+  return data.map(item => ({
+    ...item,
+    timelineDate: formatDateWithTimeZone(item.timelineDate) || "",
+    timelineTitle: item.timelineTitle || "",
+    timelineImage: item.timelineImage || ""
+  }));
+};
+
+const calculateAge = (birthDate, deathDate) => {
+  if (!birthDate || !deathDate) return "";
+  try {
+    const birth = new Date(birthDate);
+    const death = new Date(deathDate);
+    
+    if (isNaN(birth.getTime()) || isNaN(death.getTime())) {
+      return "";
+    }
+
+    let age = death.getFullYear() - birth.getFullYear();
+    const monthDiff = death.getMonth() - birth.getMonth();
+    
+    if (monthDiff < 0 || (monthDiff === 0 && death.getDate() < birth.getDate())) {
+      age--;
+    }
+    
+    return age;
+  } catch (error) {
+    console.error('Error calculating age:', error);
+    return "";
+  }
+};
+
   return (
     <>
     {loading ? (
@@ -428,14 +512,19 @@ const formatDateChange = (dateString) => {
     <FadeLoader color="#062A27" />
       </div>
     ) : (
-    <div className='flex justify-center items-center flex-col w-[100%] '>
+    <div className='flex justify-center items-center flex-col w-[100%]'>
     <button onClick={handleEventModal}   className='bg-[#062A27] rounded-[30px] flex border border-[#B08655] justify-center items-center h-[45px] mt-5 w-[90%] font-[500] text-[16px] cursor-pointer text-white'><FaPlus className='mr-2'/>Add an important event</button>
     {events.length === 0 ? (
-      <div className='flex justify-center items-center flex-col w-[100%] mt-5 '>
+      <div className='flex justify-center items-center flex-col w-[100%] mt-5'>
       <div className='flex justify-center border border-[#DFE1E1] rounded-[20px]  items-center flex-col h-[250px] w-[90%]'>
       <img className='w-[70px]' src={emtpy}/>
       <h1 className='font-bold Satoshi-bold text-[16px] text-[#062A27]  mt-3'>No timeline events found</h1>
-      <p className='text-[#5F6161] text-[13px] mt-3'>Alex Smith's timeline is empty at the moment.</p>
+      <p className='text-[#5F6161] text-[13px] mt-3'>{userdata?.firstName || 'User'}'s timeline is empty at the moment.</p>
+      {userdata?.birthDate && userdata?.deathDate && (
+        <p className='text-[#5F6161] text-[13px] mt-2'>
+          Age at time of death: {calculateAge(userdata.birthDate, userdata.deathDate)} years
+        </p>
+      )}
       </div>  </div>):(
   <div className='flex justify-start flex-col w-[90%] mt-5'>
   <div className='text-[16px] text-[#062A27] font-bold Satoshi-bold '>SIGNIFICANT EVENTS</div>
@@ -463,6 +552,7 @@ const formatDateChange = (dateString) => {
           <img
             className="w-[53px] ml-3 h-[53px] rounded-[4px] object-cover"
             src={item?.timelineImage || "https://placehold.co/53"}
+            alt="Event"
           />
           <p className="text-[#5F6161] ml-3 h-[60px] overflow-y-auto">
             {item?.timelineTitle}
