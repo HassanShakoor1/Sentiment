@@ -53,17 +53,27 @@ export default function Timeline({toast}) {
     };
   
     const formatDateWithTimeZone = (dateString, timeZone = "UTC") => {
-      const date = new Date(dateString); // Parse input date
-      return new Intl.DateTimeFormat("en-US", {
-        timeZone,
-        year: "numeric",
-        month: "short",
-        day: "2-digit",
-        hour: "2-digit",
-        minute: "2-digit",
-        second: "2-digit",
-        hour12: false,
-      }).format(date);
+      if (!dateString) return "";
+      try {
+        // Parse the date string and ensure it's in a consistent format
+        const date = new Date(dateString);
+        if (isNaN(date.getTime())) {
+          return "";
+        }
+        return new Intl.DateTimeFormat("en-US", {
+          timeZone,
+          year: "numeric",
+          month: "short",
+          day: "2-digit",
+          hour: "2-digit",
+          minute: "2-digit",
+          second: "2-digit",
+          hour12: false,
+        }).format(date);
+      } catch (error) {
+        console.error('Invalid date format:', error);
+        return "";
+      }
     };
   
 
@@ -376,21 +386,35 @@ const formatDate = (timestamp) => {
   return `${year}-${month}-${day}`;
 }; 
  const formatDateNew = (dateString) => {
-  const date = new Date(dateString); // Parse input date
-  return date.toLocaleDateString("en-US", {
-    month: "short",  // Short month name like 'Dec'
-    day: "2-digit", // Two-digit day number
-    year: "numeric" // Full year number
-  });
-};
-const formatDateChange = (dateString) => {
   if (!dateString) return "";
   try {
     const date = new Date(dateString);
     if (isNaN(date.getTime())) {
       return "";
     }
-    return date.toISOString().split('T')[0];
+    return date.toLocaleDateString("en-US", {
+      month: "short",
+      day: "2-digit",
+      year: "numeric"
+    });
+  } catch (error) {
+    console.error('Invalid date format:', error);
+    return "";
+  }
+};
+const formatDateChange = (dateString) => {
+  if (!dateString) return "";
+  try {
+    // Parse the date string and ensure it's in a consistent format
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) {
+      return "";
+    }
+    // Format the date as YYYY-MM-DD
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
   } catch (error) {
     console.error('Invalid date format:', error);
     return "";
