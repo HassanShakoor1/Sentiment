@@ -214,7 +214,9 @@ export default function Chatbot({ userProfile, isActive }) {
           userMessage.includes('education') || userMessage.includes('complete') ||
           userMessage.includes('fyp') || userMessage.includes('graduation') ||
           userMessage.includes('job') || userMessage.includes('work') ||
-          userMessage.includes('start') || userMessage.includes('career')) {
+          userMessage.includes('start') || userMessage.includes('career') ||
+          userMessage.includes('tour') || userMessage.includes('travel') ||
+          userMessage.includes('visit') || userMessage.includes('trip')) {
         try {
           // Get fresh timeline data from Firebase
           const timelineRef = ref(db, `Profile/${userProfile.id}/timeline`);
@@ -270,7 +272,36 @@ export default function Chatbot({ userProfile, isActive }) {
 
           if (sortedEvents.length > 0) {
             // Check for specific event queries
-            if (userMessage.includes('job') || userMessage.includes('work') || 
+            if (userMessage.includes('tour') || userMessage.includes('travel') || 
+                userMessage.includes('visit') || userMessage.includes('trip')) {
+              const tourEvent = sortedEvents.find(event => {
+                const title = event.timelineTitle.toLowerCase();
+                return title.includes('tour') || 
+                       title.includes('travel') ||
+                       title.includes('visit') ||
+                       title.includes('trip') ||
+                       title.includes('went to') ||
+                       title.includes('visited');
+              });
+              
+              if (tourEvent) {
+                const date = new Date(tourEvent.timelineDate);
+                const formattedDate = date.toLocaleDateString('en-US', {
+                  year: 'numeric',
+                  month: 'short',
+                  day: 'numeric'
+                });
+                setMessages(prev => [...prev, { 
+                  text: `He went on a tour on ${formattedDate}: ${tourEvent.timelineTitle}`, 
+                  sender: 'bot' 
+                }]);
+              } else {
+                setMessages(prev => [...prev, { 
+                  text: "I couldn't find specific information about his tour.", 
+                  sender: 'bot' 
+                }]);
+              }
+            } else if (userMessage.includes('job') || userMessage.includes('work') || 
                 userMessage.includes('start') || userMessage.includes('career')) {
               const jobEvent = sortedEvents.find(event => {
                 const title = event.timelineTitle.toLowerCase();
