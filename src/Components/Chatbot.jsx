@@ -170,6 +170,18 @@ export default function Chatbot({ userProfile, isActive }) {
       const profileSnapshot = await get(profileRef);
       const firebaseProfileData = profileSnapshot.val();
 
+      // Check for deceased person's name queries
+      if (userMessage.includes('name') || userMessage.includes('who is') || userMessage.includes('person')) {
+        const firstName = firebaseProfileData?.firstName || 'Not specified';
+        const lastName = firebaseProfileData?.lastName || 'Not specified';
+        setMessages(prev => [...prev, { 
+          text: `Name: ${firstName} ${lastName}`, 
+          sender: 'bot' 
+        }]);
+        setIsTyping(false);
+        return;
+      }
+
       // Check for cemetery city queries
       if (userMessage.includes('cemetery city') || userMessage.includes('city after death')) {
         const cemeteryCity = firebaseProfileData?.cemeteryCity || 'Not specified';
@@ -208,39 +220,6 @@ export default function Chatbot({ userProfile, isActive }) {
         const cemeteryState = firebaseProfileData?.cemeteryState || 'Not specified';
         setMessages(prev => [...prev, { 
           text: `Cemetery State: ${cemeteryState}`, 
-          sender: 'bot' 
-        }]);
-        setIsTyping(false);
-        return;
-      }
-
-      // Check for location before death queries
-      if (userMessage.includes('location before death') || userMessage.includes('where did they live')) {
-        const city = firebaseProfileData?.city || 'Not specified';
-        const state = firebaseProfileData?.state || 'Not specified';
-        setMessages(prev => [...prev, { 
-          text: `Location Before Death:\nCity: ${city}\nState: ${state}`, 
-          sender: 'bot' 
-        }]);
-        setIsTyping(false);
-        return;
-      }
-
-      // Check for location before death city queries
-      if (userMessage.includes('city before death') || userMessage.includes('where was the city')) {
-        const city = firebaseProfileData?.city || 'Not specified';
-        setMessages(prev => [...prev, { 
-          text: `City Before Death: ${city}`, 
-          sender: 'bot' 
-        }]);
-        setIsTyping(false);
-        return;
-      }
-
-      // Check for owner/profile related queries
-      if (userMessage.includes('owner') || userMessage.includes('who owns') || userMessage.includes('who created')) {
-        setMessages(prev => [...prev, { 
-          text: `Profile Owner: ${userName}`, 
           sender: 'bot' 
         }]);
         setIsTyping(false);
@@ -292,8 +271,15 @@ export default function Chatbot({ userProfile, isActive }) {
       // Check if Cohere API key is available
       const cohereApiKey = import.meta.env.VITE_COHERE_API_KEY;
       if (!cohereApiKey) {
+        // If API key is not available, try to respond with profile data
+        const firstName = firebaseProfileData?.firstName || 'Not specified';
+        const lastName = firebaseProfileData?.lastName || 'Not specified';
+        const birthDate = firebaseProfileData?.birthDate || 'Not specified';
+        const deathDate = firebaseProfileData?.deathDate || 'Not specified';
+        const bio = firebaseProfileData?.bioInformation || 'Not specified';
+        
         setMessages(prev => [...prev, { 
-          text: "I'm sorry, I'm having trouble connecting to the AI service. Please try again later.", 
+          text: `Name: ${firstName} ${lastName}\nBirth Date: ${birthDate}\nDeath Date: ${deathDate}\nBio: ${bio}`, 
           sender: 'bot' 
         }]);
         setIsTyping(false);
@@ -323,8 +309,15 @@ export default function Chatbot({ userProfile, isActive }) {
       if (!response.ok) {
         const errorData = await response.json();
         if (response.status === 401) {
+          // If API key is invalid, try to respond with profile data
+          const firstName = firebaseProfileData?.firstName || 'Not specified';
+          const lastName = firebaseProfileData?.lastName || 'Not specified';
+          const birthDate = firebaseProfileData?.birthDate || 'Not specified';
+          const deathDate = firebaseProfileData?.deathDate || 'Not specified';
+          const bio = firebaseProfileData?.bioInformation || 'Not specified';
+          
           setMessages(prev => [...prev, { 
-            text: "I'm sorry, I'm having trouble connecting to the AI service. Please check your API configuration.", 
+            text: `Name: ${firstName} ${lastName}\nBirth Date: ${birthDate}\nDeath Date: ${deathDate}\nBio: ${bio}`, 
             sender: 'bot' 
           }]);
         } else {
