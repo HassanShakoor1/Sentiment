@@ -26,7 +26,7 @@ import { ClipLoader, FadeLoader } from "react-spinners";
 import "../App.css";
 import { useDispatch, useSelector } from "react-redux";
 import { setUser } from "../Redux/userSlice";
-import logo from "../images/logo.svg";
+import logo from "../images/logo.png";
 export default function Home() {
   let dispatch = useDispatch();
 
@@ -267,7 +267,7 @@ export default function Home() {
               &trade;
             </p> */}
 
-            <img className="h-[30px] w-[155px] object-cover" src={logo} />
+            <img className="h-[45px] w-[240px] object-cover" src={logo} />
           </div>
           <div className="border flex justify-center items-center border-[#E5D6C5] bg-white w-[40px] h-[40px] rounded-[50%]">
             <img className="w-[24px] " src={Notification} />

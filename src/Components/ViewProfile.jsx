@@ -39,7 +39,7 @@ import { Slide, ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import NotFound from "../Pages/NotFound";
 import { FadeLoader } from "react-spinners";
-import logo from "../images/logo.svg";
+import logo from "../images/logo.png";
 import Chatbot from "./Chatbot";
 
 export default function ViewProfile() {
@@ -351,7 +351,7 @@ export default function ViewProfile() {
               <p className="orelega-one-regular text-[20px]">Sentiments Co.</p>{" "}
               &trade;
             </p> */}
-            <img className="h-[30px] w-[155px] object-cover" src={logo} />
+            <img className="h-[45px] w-[240px] object-cover" src={logo} />
           </div>
         </div>
         <div className="flex  items-center flex-col w-[90%] rounded-[22px] mt-5  bg-white">

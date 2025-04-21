@@ -9,7 +9,7 @@ import { Store } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
 import { Box, Modal } from "@mui/material";
 import { IoClose } from "react-icons/io5";
-import logo from "../images/logo.svg";
+import logo from "../images/logo.png";
 export default function Sidebar({
   handleslideclose,
   handleaccount,
@@ -48,7 +48,7 @@ export default function Sidebar({
                   </p>{" "}
                   &trade;
                 </p> */}
-                <img className="h-[30px] w-[155px] object-cover" src={logo} />
+                <img className="h-[45px] w-[240px] object-cover" src={logo} />
               </div>
               <div
                 onClick={handleslideclose}

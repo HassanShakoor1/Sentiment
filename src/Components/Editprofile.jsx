@@ -18,7 +18,7 @@ import Sidebar from "./Sidebar";
 import Menu from "@mui/material/Menu";
 import MenuItem from "@mui/material/MenuItem";
 import { FaDeleteLeft } from "react-icons/fa6";
-import logo from "../images/logo.svg";
+import logo from "../images/logo.png";
 import Modal from "@mui/material/Modal";
 import cross from "../images/cross.png";
 import back from "../images/Frame 1171277120.png";

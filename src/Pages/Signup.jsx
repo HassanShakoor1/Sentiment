@@ -13,7 +13,7 @@ import {
   ref,
   update,
 } from "firebase/database";
-import logo from "../images/logo.svg";
+import logo from "../images/logo.png";
 
 export default function Signup() {
   const [showPassword, setShowPassword] = useState(true);
@@ -107,7 +107,7 @@ export default function Signup() {
       <div className="flex items-center justify-center flex-col w-[100%] min-h-[100vh] bg-[#f0f0f0]">
         <div className="flex justify-center items-center flex-col mt-10">
           <div className="flex text-[#B08655]    items-center">
-            <img className="h-[39px] w-[206px] object-cover" src={logo} />
+            <img className="h-[45px] w-[240px] object-cover" src={logo} />
           </div>
         </div>
         <div className="w-[90%] rounded-[20px] bg-white flex justify-center mt-10 items-center flex-col">
