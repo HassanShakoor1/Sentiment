@@ -29,12 +29,12 @@ import { ClipLoader, FadeLoader } from 'react-spinners'
 import { useSelector } from 'react-redux'
 import { FiMoreVertical } from 'react-icons/fi'
 export default function Timeline({toast}) {
-    let [event,setEvent]= useState(false)
-    let [custom,setCustom]= useState(false)
-    let [allevent,setAllevent]= useState("")
-    let [singleevent,setSingleevent]=useState("")
-    let [timelineDate,setTimelineDate]=useState("")
-    let [timelineTitle,setTimelineTitle]=useState("")
+    const [event, setEvent] = useState(false);
+    const [custom, setCustom] = useState(false);
+    const [allevent,setAllevent]= useState("")
+    const [singleevent, setSingleevent] = useState(false);
+    const [timelineDate,setTimelineDate]=useState("")
+    const [timelineTitle,setTimelineTitle]=useState("")
     const [btnloader,setBTnloader]=useState(false)
     const [loading,setloading]=useState(false)
     const {id}=useParams();
@@ -92,21 +92,21 @@ export default function Timeline({toast}) {
     }, []);
 
 
-    let handleEventModal =()=>{
+    let handleEventModal = () => {
         setEvent(true)
     }
-    let handleclose =()=>{
+    let handleclose = () => {
         setEvent(false)
       
     }
-    let handlecloseevet =()=>{
+    let handlecloseevet = () => {
       setEvent(true)
       setSingleevent(false)
   }
-    let handlecustuom =()=>{
+    let handlecustuom = () => {
         setCustom(true)
     }
-    let handlebackEvent =()=>{
+    let handlebackEvent = () => {
         setCustom(false)
         setEvent(true)
     }
@@ -226,7 +226,7 @@ const arrytimeline = [
   { year: '2022', event: '25th Wedding Anniversary in Maui on February 01', image: couple },
   { year: '2020', event: '25th Wedding Anniversary in Maui on February 01', image: couple },
 ];
-let [timelineImageView,setTimelineImageView]=useState("")
+let [timelineImageView,setTimelineImageView]=useState(false)
 let [timelineData,setTimelineData]=useState("")
 let handleSingleTimelineClick=(item)=>{
   setTimelineData(item)
@@ -385,8 +385,16 @@ const formatDate = (timestamp) => {
 };
 const formatDateChange = (dateString) => {
   if (!dateString) return "";
-  const date = new Date(dateString); // Parse input date
-  return date.toISOString().split('T')[0]; // Convert to 'YYYY-MM-DD' format
+  try {
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) {
+      return "";
+    }
+    return date.toISOString().split('T')[0];
+  } catch (error) {
+    console.error('Invalid date format:', error);
+    return "";
+  }
 };
   return (
     <>
@@ -446,7 +454,7 @@ const formatDateChange = (dateString) => {
     </div>
 )}
     <Modal
-    open={event}
+    open={Boolean(event)}
     onClose={handleclose}
     aria-labelledby="add-link-modal-title"
     aria-describedby="add-link-modal-description"
@@ -499,7 +507,7 @@ const formatDateChange = (dateString) => {
     </Box>
   </Modal>
   <Modal
-  open={singleevent}
+  open={Boolean(singleevent)}
   onClose={handleclose}
   aria-labelledby="add-link-modal-title"
   aria-describedby="add-link-modal-description"
@@ -600,7 +608,7 @@ getContentAnchorEl={null}
 </Menu>
 
 <Modal
-open={timelineImageView}
+open={Boolean(timelineImageView)}
 onClose={handletimelineImageview}
 aria-labelledby="add-link-modal-title"
 aria-describedby="add-link-modal-description"
@@ -643,7 +651,7 @@ aria-describedby="add-link-modal-description"
 </Box>
 </Modal>
 <Modal
-open={editModal}
+open={Boolean(editModal)}
 onClose={handleCloseEditEvent}
 aria-labelledby="edit-event-modal-title"
 aria-describedby="edit-event-modal-description"

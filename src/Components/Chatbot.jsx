@@ -170,12 +170,101 @@ export default function Chatbot({ userProfile, isActive }) {
       const profileSnapshot = await get(profileRef);
       const firebaseProfileData = profileSnapshot.val();
 
-      // Check for deceased person's name queries
-      if (userMessage.includes('name') || userMessage.includes('who is') || userMessage.includes('person')) {
-        const firstName = firebaseProfileData?.firstName || 'Not specified';
-        const lastName = firebaseProfileData?.lastName || 'Not specified';
+      // Check for birthday queries
+      if (userMessage.includes('birth') || userMessage.includes('birthday') || userMessage.includes('born')) {
+        const birthDate = firebaseProfileData?.birthDate || 'Not specified';
+        if (birthDate !== 'Not specified') {
+          // Format date based on the type of query
+          const date = new Date(birthDate);
+          let formattedDate;
+          
+          if (userMessage.includes('when') && (userMessage.includes('born') || userMessage.includes('birth'))) {
+            // Include year for "when born" queries
+            formattedDate = date.toLocaleDateString('en-US', {
+              month: 'short',
+              day: 'numeric',
+              year: 'numeric'
+            });
+          } else {
+            // Show only month and day for general birthday queries
+            formattedDate = date.toLocaleDateString('en-US', {
+              month: 'short',
+              day: 'numeric'
+            });
+          }
+          
+          setMessages(prev => [...prev, { 
+            text: `Birth Date: ${formattedDate}`, 
+            sender: 'bot' 
+          }]);
+        } else {
+          setMessages(prev => [...prev, { 
+            text: `Birth Date: Not specified`, 
+            sender: 'bot' 
+          }]);
+        }
+        setIsTyping(false);
+        return;
+      }
+
+      // Check for timeline queries
+      if (userMessage.includes('timeline') || userMessage.includes('event') || 
+          userMessage.includes('achievement') || userMessage.includes('award') ||
+          userMessage.includes('fyp')) {
+        try {
+          // Get fresh timeline data from Firebase
+          const timelineRef = ref(db, `Profile/${userProfile.id}/timeline`);
+          const timelineSnapshot = await get(timelineRef);
+          const timelineData = timelineSnapshot.val() || {};
+
+          let timelineArray;
+          
+          // Dynamically handle any timeline data structure
+          if (Array.isArray(timelineData)) {
+            timelineArray = timelineData;
+          } else if (typeof timelineData === 'object' && timelineData !== null) {
+            timelineArray = Object.values(timelineData);
+          } else {
+            timelineArray = [];
+          }
+          
+          if (timelineArray.length > 0) {
+            const sortedEvents = timelineArray
+              .filter(event => event && event.timelineDate && event.timelineTitle)
+              .sort((a, b) => new Date(a.timelineDate) - new Date(b.timelineDate));
+
+            if (sortedEvents.length > 0) {
+              const botResponse = sortedEvents
+                .map(event => {
+                  // Format date to remove time portion
+                  const date = new Date(event.timelineDate);
+                  const formattedDate = date.toLocaleDateString('en-US', {
+                    year: 'numeric',
+                    month: 'short',
+                    day: 'numeric'
+                  });
+                  return `${formattedDate}: ${event.timelineTitle}`;
+                })
+                .join('\n');
+              setMessages(prev => [...prev, { text: botResponse, sender: 'bot' }]);
+            } else {
+              setMessages(prev => [...prev, { text: "No timeline events are available in the profile.", sender: 'bot' }]);
+            }
+          } else {
+            setMessages(prev => [...prev, { text: "No timeline events are available in the profile.", sender: 'bot' }]);
+          }
+        } catch (error) {
+          console.error('Error fetching timeline data:', error);
+          setMessages(prev => [...prev, { text: "Error accessing timeline data. Please try again.", sender: 'bot' }]);
+        }
+        setIsTyping(false);
+        return;
+      }
+
+      // Check for owner/profile related queries
+      if (userMessage.includes('owner') || userMessage.includes('who owns') || userMessage.includes('who created')) {
         setMessages(prev => [...prev, { 
-          text: `Name: ${firstName} ${lastName}`, 
+          text: `Profile Owner: ${userName}`, 
           sender: 'bot' 
         }]);
         setIsTyping(false);
@@ -198,6 +287,55 @@ export default function Chatbot({ userProfile, isActive }) {
         const cemeteryState = firebaseProfileData?.cemeteryState || 'Not specified';
         setMessages(prev => [...prev, { 
           text: `Cemetery State: ${cemeteryState}`, 
+          sender: 'bot' 
+        }]);
+        setIsTyping(false);
+        return;
+      }
+
+      // Check for cemetery name queries
+      if (userMessage.includes('cemetery name') || userMessage.includes('cemetery')) {
+        const cemeteryName = firebaseProfileData?.cemeteryName || 'Not specified';
+        const cemeteryLocation = firebaseProfileData?.cemeteryLocation || 'Not specified';
+        const cemeteryPlot = firebaseProfileData?.cemeteryPlot || 'Not specified';
+        setMessages(prev => [...prev, { 
+          text: `Cemetery Name: ${cemeteryName}\nLocation: ${cemeteryLocation}\nPlot: ${cemeteryPlot}`, 
+          sender: 'bot' 
+        }]);
+        setIsTyping(false);
+        return;
+      }
+
+      // Check for deceased person's name queries
+      if (userMessage.includes('name') || userMessage.includes('who is') || userMessage.includes('person')) {
+        const firstName = firebaseProfileData?.firstName || 'Not specified';
+        const lastName = firebaseProfileData?.lastName || 'Not specified';
+        setMessages(prev => [...prev, { 
+          text: `Name: ${firstName} ${lastName}`, 
+          sender: 'bot' 
+        }]);
+        setIsTyping(false);
+        return;
+      }
+
+      // Check for location before death queries
+      if (userMessage.includes('where he lives') || userMessage.includes('where he lived') || 
+          userMessage.includes('location before death') || userMessage.includes('lived before death')) {
+        const city = firebaseProfileData?.city || 'Not specified';
+        const state = firebaseProfileData?.state || 'Not specified';
+        setMessages(prev => [...prev, { 
+          text: `Location Before Death:\nCity: ${city}\nState: ${state}`, 
+          sender: 'bot' 
+        }]);
+        setIsTyping(false);
+        return;
+      }
+
+      // Check for location before death city queries
+      if (userMessage.includes('city before death') || userMessage.includes('where was the city')) {
+        const city = firebaseProfileData?.city || 'Not specified';
+        setMessages(prev => [...prev, { 
+          text: `City Before Death: ${city}`, 
           sender: 'bot' 
         }]);
         setIsTyping(false);
@@ -228,7 +366,7 @@ export default function Chatbot({ userProfile, isActive }) {
 
       // Check for age-related queries
       if (userMessage.includes('age') || userMessage.includes('how old')) {
-        const age = calculateAge(userProfile.birthDate, userProfile.deathDate);
+        const age = calculateAge(firebaseProfileData?.birthDate, firebaseProfileData?.deathDate);
         if (age !== 'Not specified') {
           setMessages(prev => [...prev, { 
             text: `Age at time of death: ${age} years`, 
@@ -237,35 +375,6 @@ export default function Chatbot({ userProfile, isActive }) {
           setIsTyping(false);
           return;
         }
-      }
-
-      // Check if the query is about timeline
-      const timelineKeywords = ['timeline', 'event', 'events', 'achievement', 'award', 'employee of the month'];
-      const isTimelineQuery = timelineKeywords.some(keyword => 
-        userMessage.includes(keyword)
-      );
-
-      if (isTimelineQuery) {
-        const { timeline = {} } = userProfile;
-        const timelineArray = Array.isArray(timeline) ? timeline : Object.values(timeline);
-        
-        if (timelineArray.length > 0) {
-          const sortedEvents = timelineArray
-            .filter(event => event && event.timelineDate && event.timelineTitle)
-            .sort((a, b) => new Date(a.timelineDate) - new Date(b.timelineDate));
-
-          if (sortedEvents.length > 0) {
-            const botResponse = sortedEvents
-              .map(event => `${event.timelineDate}: ${event.timelineTitle}`)
-              .join('\n');
-            setMessages(prev => [...prev, { text: botResponse, sender: 'bot' }]);
-            setIsTyping(false);
-            return;
-          }
-        }
-        setMessages(prev => [...prev, { text: "No timeline events are available in the profile.", sender: 'bot' }]);
-        setIsTyping(false);
-        return;
       }
 
       // Check if Cohere API key is available
@@ -277,9 +386,12 @@ export default function Chatbot({ userProfile, isActive }) {
         const birthDate = firebaseProfileData?.birthDate || 'Not specified';
         const deathDate = firebaseProfileData?.deathDate || 'Not specified';
         const bio = firebaseProfileData?.bioInformation || 'Not specified';
+        const cemeteryName = firebaseProfileData?.cemeteryName || 'Not specified';
+        const cemeteryLocation = firebaseProfileData?.cemeteryLocation || 'Not specified';
+        const cemeteryPlot = firebaseProfileData?.cemeteryPlot || 'Not specified';
         
         setMessages(prev => [...prev, { 
-          text: `Name: ${firstName} ${lastName}\nBirth Date: ${birthDate}\nDeath Date: ${deathDate}\nBio: ${bio}`, 
+          text: `Name: ${firstName} ${lastName}\nBirth Date: ${birthDate}\nDeath Date: ${deathDate}\nBio: ${bio}\nCemetery: ${cemeteryName}\nLocation: ${cemeteryLocation}\nPlot: ${cemeteryPlot}`, 
           sender: 'bot' 
         }]);
         setIsTyping(false);
@@ -315,9 +427,12 @@ export default function Chatbot({ userProfile, isActive }) {
           const birthDate = firebaseProfileData?.birthDate || 'Not specified';
           const deathDate = firebaseProfileData?.deathDate || 'Not specified';
           const bio = firebaseProfileData?.bioInformation || 'Not specified';
+          const cemeteryName = firebaseProfileData?.cemeteryName || 'Not specified';
+          const cemeteryLocation = firebaseProfileData?.cemeteryLocation || 'Not specified';
+          const cemeteryPlot = firebaseProfileData?.cemeteryPlot || 'Not specified';
           
           setMessages(prev => [...prev, { 
-            text: `Name: ${firstName} ${lastName}\nBirth Date: ${birthDate}\nDeath Date: ${deathDate}\nBio: ${bio}`, 
+            text: `Name: ${firstName} ${lastName}\nBirth Date: ${birthDate}\nDeath Date: ${deathDate}\nBio: ${bio}\nCemetery: ${cemeteryName}\nLocation: ${cemeteryLocation}\nPlot: ${cemeteryPlot}`, 
             sender: 'bot' 
           }]);
         } else {
@@ -335,29 +450,117 @@ export default function Chatbot({ userProfile, isActive }) {
 
       // Check if the response contains any profile data
       const profileData = [
-        userProfile.firstName,
-        userProfile.lastName,
-        userProfile.birthDate,
-        userProfile.deathDate,
-        userProfile.bioInformation,
-        userProfile.cemeteryName,
-        userProfile.cemeteryLocation,
-        userProfile.cemeteryPlot,
+        firebaseProfileData?.firstName,
+        firebaseProfileData?.lastName,
+        firebaseProfileData?.birthDate,
+        firebaseProfileData?.deathDate,
+        firebaseProfileData?.bioInformation,
+        firebaseProfileData?.cemeteryName,
+        firebaseProfileData?.cemeteryLocation,
+        firebaseProfileData?.cemeteryPlot,
       ].filter(Boolean);
 
       const hasProfileData = profileData.some(item => botResponse.includes(item));
       
       if (!hasProfileData) {
-        if (userMessage.includes('birth')) {
-          botResponse = `Birth Date: ${userProfile.birthDate || 'Not specified'}`;
+        if (userMessage.includes('birth') || userMessage.includes('birthday') || userMessage.includes('born')) {
+          const birthDate = firebaseProfileData?.birthDate || 'Not specified';
+          if (birthDate !== 'Not specified') {
+            // Format date based on the type of query
+            const date = new Date(birthDate);
+            let formattedDate;
+            
+            if (userMessage.includes('when') && (userMessage.includes('born') || userMessage.includes('birth'))) {
+              // Include year for "when born" queries
+              formattedDate = date.toLocaleDateString('en-US', {
+                month: 'short',
+                day: 'numeric',
+                year: 'numeric'
+              });
+            } else {
+              // Show only month and day for general birthday queries
+              formattedDate = date.toLocaleDateString('en-US', {
+                month: 'short',
+                day: 'numeric'
+              });
+            }
+            
+            botResponse = `Birth Date: ${formattedDate}`;
+          } else {
+            botResponse = `Birth Date: Not specified`;
+          }
+        } else if (userMessage.includes('timeline') || userMessage.includes('event') || 
+                  userMessage.includes('achievement') || userMessage.includes('award') ||
+                  userMessage.includes('fyp')) {
+          try {
+            // Get fresh timeline data from Firebase
+            const timelineRef = ref(db, `Profile/${userProfile.id}/timeline`);
+            const timelineSnapshot = await get(timelineRef);
+            const timelineData = timelineSnapshot.val() || {};
+
+            let timelineArray;
+            
+            // Dynamically handle any timeline data structure
+            if (Array.isArray(timelineData)) {
+              timelineArray = timelineData;
+            } else if (typeof timelineData === 'object' && timelineData !== null) {
+              timelineArray = Object.values(timelineData);
+            } else {
+              timelineArray = [];
+            }
+            
+            if (timelineArray.length > 0) {
+              const sortedEvents = timelineArray
+                .filter(event => event && event.timelineDate && event.timelineTitle)
+                .sort((a, b) => new Date(a.timelineDate) - new Date(b.timelineDate));
+
+              if (sortedEvents.length > 0) {
+                botResponse = sortedEvents
+                  .map(event => {
+                    // Format date to remove time portion
+                    const date = new Date(event.timelineDate);
+                    const formattedDate = date.toLocaleDateString('en-US', {
+                      year: 'numeric',
+                      month: 'short',
+                      day: 'numeric'
+                    });
+                    return `${formattedDate}: ${event.timelineTitle}`;
+                  })
+                  .join('\n');
+              } else {
+                botResponse = "No timeline events are available in the profile.";
+              }
+            } else {
+              botResponse = "No timeline events are available in the profile.";
+            }
+          } catch (error) {
+            console.error('Error fetching timeline data:', error);
+            botResponse = "Error accessing timeline data. Please try again.";
+          }
         } else if (userMessage.includes('death')) {
-          botResponse = `Death Date: ${userProfile.deathDate || 'Not specified'}`;
-        } else if (userMessage.includes('cemetery')) {
-          botResponse = `Cemetery: ${userProfile.cemeteryName || 'Not specified'}\nLocation: ${userProfile.cemeteryLocation || 'Not specified'}\nPlot: ${userProfile.cemeteryPlot || 'Not specified'}`;
+          botResponse = `Death Date: ${firebaseProfileData?.deathDate || 'Not specified'}`;
+        } else if (userMessage.includes('where he lives') || userMessage.includes('where he lived') || 
+                  userMessage.includes('location before death') || userMessage.includes('lived before death')) {
+          const city = firebaseProfileData?.city || 'Not specified';
+          const state = firebaseProfileData?.state || 'Not specified';
+          botResponse = `Location Before Death:\nCity: ${city}\nState: ${state}`;
+        } else if (userMessage.includes('city before death') || userMessage.includes('where was the city')) {
+          botResponse = `City Before Death: ${firebaseProfileData?.city || 'Not specified'}`;
+        } else if (userMessage.includes('state before death') || userMessage.includes('where was the state')) {
+          botResponse = `State Before Death: ${firebaseProfileData?.state || 'Not specified'}`;
+        } else if (userMessage.includes('cemetery city') || userMessage.includes('city after death')) {
+          botResponse = `Cemetery City: ${firebaseProfileData?.cemeteryCity || 'Not specified'}`;
+        } else if (userMessage.includes('cemetery state') || userMessage.includes('state after death')) {
+          botResponse = `Cemetery State: ${firebaseProfileData?.cemeteryState || 'Not specified'}`;
+        } else if (userMessage.includes('cemetery name') || userMessage.includes('cemetery')) {
+          const cemeteryName = firebaseProfileData?.cemeteryName || 'Not specified';
+          const cemeteryLocation = firebaseProfileData?.cemeteryLocation || 'Not specified';
+          const cemeteryPlot = firebaseProfileData?.cemeteryPlot || 'Not specified';
+          botResponse = `Cemetery Name: ${cemeteryName}\nLocation: ${cemeteryLocation}\nPlot: ${cemeteryPlot}`;
         } else if (userMessage.includes('bio')) {
-          botResponse = `Bio: ${userProfile.bioInformation || 'Not specified'}`;
-        } else {
-          botResponse = "I don't have that specific information in the profile.";
+          botResponse = `Bio: ${firebaseProfileData?.bioInformation || 'Not specified'}`;
+        } else if (userMessage.includes('owner') || userMessage.includes('who owns') || userMessage.includes('who created')) {
+          botResponse = `Profile Owner: ${userName}`;
         }
       }
 
