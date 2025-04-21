@@ -212,7 +212,9 @@ export default function Chatbot({ userProfile, isActive }) {
           userMessage.includes('achievement') || userMessage.includes('award') ||
           userMessage.includes('employee') || userMessage.includes('month') ||
           userMessage.includes('education') || userMessage.includes('complete') ||
-          userMessage.includes('fyp') || userMessage.includes('graduation')) {
+          userMessage.includes('fyp') || userMessage.includes('graduation') ||
+          userMessage.includes('job') || userMessage.includes('work') ||
+          userMessage.includes('start') || userMessage.includes('career')) {
         try {
           // Get fresh timeline data from Firebase
           const timelineRef = ref(db, `Profile/${userProfile.id}/timeline`);
@@ -248,7 +250,33 @@ export default function Chatbot({ userProfile, isActive }) {
 
             if (sortedEvents.length > 0) {
               // Check for specific event queries
-              if (userMessage.includes('fyp')) {
+              if (userMessage.includes('job') || userMessage.includes('work') || 
+                  userMessage.includes('start') || userMessage.includes('career')) {
+                const jobEvent = sortedEvents.find(event => 
+                  event.timelineTitle.toLowerCase().includes('job') || 
+                  event.timelineTitle.toLowerCase().includes('work') ||
+                  event.timelineTitle.toLowerCase().includes('career') ||
+                  event.timelineTitle.toLowerCase().includes('employee')
+                );
+                
+                if (jobEvent) {
+                  const date = new Date(jobEvent.timelineDate);
+                  const formattedDate = date.toLocaleDateString('en-US', {
+                    year: 'numeric',
+                    month: 'short',
+                    day: 'numeric'
+                  });
+                  setMessages(prev => [...prev, { 
+                    text: `He started his new job on ${formattedDate}: ${jobEvent.timelineTitle}`, 
+                    sender: 'bot' 
+                  }]);
+                } else {
+                  setMessages(prev => [...prev, { 
+                    text: "I couldn't find specific information about when he started his job.", 
+                    sender: 'bot' 
+                  }]);
+                }
+              } else if (userMessage.includes('fyp')) {
                 const fypEvent = sortedEvents.find(event => 
                   event.timelineTitle.toLowerCase().includes('fyp')
                 );
