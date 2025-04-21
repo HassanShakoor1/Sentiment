@@ -14,6 +14,7 @@ import cover from "../images/Group 659 (3).png";
 import { GoHeart } from "react-icons/go";
 import { GoHeartFill } from "react-icons/go";
 import { RiShareForwardLine } from "react-icons/ri";
+import { RiRobot2Line } from "react-icons/ri";
 import ViewtimeLine from "./ViewtimeLine";
 import ViewBio from "./ViewBio";
 import cross from "../images/cross.png";
@@ -39,6 +40,8 @@ import "react-toastify/dist/ReactToastify.css";
 import NotFound from "../Pages/NotFound";
 import { FadeLoader } from "react-spinners";
 import logo from "../images/logo.svg";
+import Chatbot from "./Chatbot";
+
 export default function ViewProfile() {
   let dispatch = useDispatch();
   const { id } = useParams();
@@ -59,6 +62,8 @@ export default function ViewProfile() {
   const [media, setMedallions] = useState(true);
   const [tributes, setTributes] = useState(false);
   const [destails, setDetails] = useState(false);
+  const [aiAssistant, setAIAssistant] = useState(false);
+  const [chatbotOpen, setChatbotOpen] = useState(false);
 
   const handlefvrt = () => {
     setfavorites(true);
@@ -66,6 +71,7 @@ export default function ViewProfile() {
     setMedallions(false);
     setTributes(false);
     setDetails(false);
+    setAIAssistant(false);
   };
   const handlepost = () => {
     setfavorites(false);
@@ -73,6 +79,7 @@ export default function ViewProfile() {
     setMedallions(false);
     setTributes(false);
     setDetails(false);
+    setAIAssistant(false);
   };
   const handleMedallions = () => {
     setfavorites(false);
@@ -80,6 +87,7 @@ export default function ViewProfile() {
     setMedallions(true);
     setTributes(false);
     setDetails(false);
+    setAIAssistant(false);
   };
   const handletributes = () => {
     setfavorites(false);
@@ -87,6 +95,7 @@ export default function ViewProfile() {
     setMedallions(false);
     setTributes(true);
     setDetails(false);
+    setAIAssistant(false);
   };
 
   const handledetails = () => {
@@ -95,6 +104,17 @@ export default function ViewProfile() {
     setMedallions(false);
     setTributes(false);
     setDetails(true);
+    setAIAssistant(false);
+  };
+
+  const handleAIAssistant = () => {
+    setfavorites(false);
+    setpost(false);
+    setMedallions(false);
+    setTributes(false);
+    setDetails(false);
+    setAIAssistant(true);
+    setChatbotOpen(true);
   };
 
   const [filled, setFilled] = useState(
@@ -398,13 +418,32 @@ export default function ViewProfile() {
               : userViewProfile?.deathDate}
           </h1>
           <div className="w-[100%] rounded-[20px]  bg-white flex  mt-4 items-center flex-col">
-            <div className="flex justify-evenly items-center w-[100%] border-b overflow-x-scroll">
+            <div className="flex justify-between items-center w-[100%] border-b overflow-x-scroll ">
               <p
-                className="p-3 whitespace-nowrap cursor-pointer text-[#5F6161] "
+                className="p-3 cursor-pointer text-[#5F6161]"
+                onClick={handleMedallions}
+                style={
+                  media
+                    ? {
+                        borderBottom: "2px solid black",
+                        color: "#062A27",
+                        fontFamily: "Satoshi-bold",
+                      }
+                    : {}
+                }
+              >
+                Media
+              </p>
+              <p
+                className="p-3 cursor-pointer text-[#5F6161]"
                 onClick={handlefvrt}
                 style={
                   timeline
-                    ? { borderBottom: "2px solid black", color: "#062A27" }
+                    ? {
+                        borderBottom: "2px solid black",
+                        color: "#062A27",
+                        fontFamily: "Satoshi-bold",
+                      }
                     : {}
                 }
               >
@@ -415,7 +454,11 @@ export default function ViewProfile() {
                 onClick={handlepost}
                 style={
                   bio
-                    ? { borderBottom: "2px solid black", color: "#062A27" }
+                    ? {
+                        borderBottom: "2px solid black",
+                        color: "#062A27",
+                        fontFamily: "Satoshi-bold",
+                      }
                     : {}
                 }
               >
@@ -423,21 +466,14 @@ export default function ViewProfile() {
               </p>
               <p
                 className="p-3 cursor-pointer text-[#5F6161]"
-                onClick={handleMedallions}
-                style={
-                  media
-                    ? { borderBottom: "2px solid black", color: "#062A27" }
-                    : {}
-                }
-              >
-                Media
-              </p>
-              <p
-                className="p-3 cursor-pointer text-[#5F6161]"
                 onClick={handletributes}
                 style={
                   tributes
-                    ? { borderBottom: "2px solid black", color: "#062A27" }
+                    ? {
+                        borderBottom: "2px solid black",
+                        color: "#062A27",
+                        fontFamily: "Satoshi-bold",
+                      }
                     : {}
                 }
               >
@@ -448,11 +484,30 @@ export default function ViewProfile() {
                 onClick={handledetails}
                 style={
                   destails
-                    ? { borderBottom: "2px solid black", color: "#062A27" }
+                    ? {
+                        borderBottom: "2px solid black",
+                        color: "#062A27",
+                        fontFamily: "Satoshi-bold",
+                      }
                     : {}
                 }
               >
                 Details
+              </p>
+              <p
+                className="p-3 cursor-pointer text-[#5F6161] flex items-center justify-center"
+                onClick={handleAIAssistant}
+                style={
+                  aiAssistant
+                    ? {
+                        borderBottom: "2px solid black",
+                        color: "#062A27",
+                        fontFamily: "Satoshi-bold",
+                      }
+                    : {}
+                }
+              >
+                <RiRobot2Line className="text-[22px] hover:scale-110 transition-transform" title="AI Assistant" />
               </p>
             </div>
             {timeline && <ViewtimeLine events={events} loading={false} />}
@@ -474,6 +529,14 @@ export default function ViewProfile() {
               />
             )}
             {destails && <ViewDetails userViewProfile={userViewProfile} />}
+            {aiAssistant && (
+              <div className="w-full p-4">
+                <Chatbot 
+                  isActive={true}
+                  userProfile={userViewProfile}
+                />
+              </div>
+            )}
             <br></br>
           </div>
           <br></br>
