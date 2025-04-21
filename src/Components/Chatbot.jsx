@@ -289,10 +289,21 @@ export default function Chatbot({ userProfile, isActive }) {
         return;
       }
 
+      // Check if Cohere API key is available
+      const cohereApiKey = import.meta.env.VITE_COHERE_API_KEY;
+      if (!cohereApiKey) {
+        setMessages(prev => [...prev, { 
+          text: "I'm sorry, I'm having trouble connecting to the AI service. Please try again later.", 
+          sender: 'bot' 
+        }]);
+        setIsTyping(false);
+        return;
+      }
+
       const response = await fetch('https://api.cohere.ai/v1/chat', {
         method: 'POST',
         headers: {
-          Authorization: `Bearer ${import.meta.env.VITE_COHERE_API_KEY}`,
+          Authorization: `Bearer ${cohereApiKey}`,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
@@ -311,7 +322,19 @@ export default function Chatbot({ userProfile, isActive }) {
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.message || 'Failed to get response from AI service');
+        if (response.status === 401) {
+          setMessages(prev => [...prev, { 
+            text: "I'm sorry, I'm having trouble connecting to the AI service. Please check your API configuration.", 
+            sender: 'bot' 
+          }]);
+        } else {
+          setMessages(prev => [...prev, { 
+            text: "I'm sorry, I encountered an error. Please try again later.", 
+            sender: 'bot' 
+          }]);
+        }
+        setIsTyping(false);
+        return;
       }
 
       const data = await response.json();
@@ -352,7 +375,7 @@ export default function Chatbot({ userProfile, isActive }) {
       setMessages(prev => [
         ...prev,
         {
-          text: "I'm sorry, I encountered an error. Please try again.",
+          text: "I'm sorry, I encountered an error. Please try again later.",
           sender: 'bot',
         },
       ]);
