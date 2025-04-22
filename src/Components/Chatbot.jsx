@@ -129,8 +129,10 @@ export default function Chatbot({ userProfile, isActive }) {
     setError(null);
 
     // Check if API key is available
-    if (!import.meta.env.VITE_COHERE_API_KEY) {
-      setError('API key is not configured. Please check your environment variables.');
+    const apiKey = import.meta.env.VITE_COHERE_API_KEY;
+    if (!apiKey) {
+      console.error('API key is missing. Current environment:', import.meta.env.MODE);
+      setError('API key is not configured. Please check your environment variables in the hosting platform.');
       setIsTyping(false);
       return;
     }
@@ -139,7 +141,7 @@ export default function Chatbot({ userProfile, isActive }) {
       const response = await fetch('https://api.cohere.ai/v1/chat', {
         method: 'POST',
         headers: {
-          Authorization: `Bearer ${import.meta.env.VITE_COHERE_API_KEY}`,
+          Authorization: `Bearer ${apiKey}`,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
