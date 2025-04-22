@@ -170,48 +170,53 @@ export default function ViewProfile() {
 
   const getSingleChild = () => {
     setloading(true);
-    // const tagRef = query(ref(db, "Tags/"), orderByChild("tagId"), equalTo(id));
-
-    // const tagTableRef = query(
-    //   ref(db, "Tags/"),
-    //   orderByChild("tagId"),
-    //   equalTo(id)
-    // );
-
     onValue(returnDbRef("Tags/", "tagId", id), async (snapshot) => {
       const data = await snapshot.val();
       if (data) {
         const thedata = Object.values(data)?.[0];
-        console.log(Object.values(data)?.[0]);
+        console.log('Tag Data:', thedata);
 
         if (thedata.status === true && thedata.userid) {
           onValue(
             returnDbRef("Profile/", "id", thedata.userid),
             async (snapshot) => {
               const data = await snapshot.val();
-
               const profileData = Object.values(data)?.[0];
+              console.log('Profile Data:', profileData);
 
               if (profileData) {
-                setUserdata(profileData);
-                dispatch(setViewProfile(profileData));
-                if (profileData?.timeline) {
-                  setEvents(Object.values(profileData?.timeline));
+                // Ensure all cemetery fields are included
+                const completeProfileData = {
+                  ...profileData,
+                  cemeteryName: profileData?.cemeteryName || 'Not specified',
+                  cemeteryLocation: profileData?.cemeteryLocation || 'Not specified',
+                  cemeteryPlot: profileData?.cemeteryPlot || 'Not specified',
+                  donationsUrl: profileData?.donationsUrl || 'Not specified',
+                  linkObituary: profileData?.linkObituary || 'Not specified',
+                  linkTitle: profileData?.linkTitle || 'Not specified',
+                  linkUrl: profileData?.linkUrl || 'Not specified',
+                  linkThumbnail: profileData?.linkThumbnail || 'Not specified'
+                };
+
+                setUserdata(completeProfileData);
+                dispatch(setViewProfile(completeProfileData));
+                if (completeProfileData?.timeline) {
+                  setEvents(Object.values(completeProfileData?.timeline));
                 } else {
                   setEvents([]);
                 }
-                if (profileData?.imageMedia) {
-                  setImageData(Object.values(profileData?.imageMedia));
+                if (completeProfileData?.imageMedia) {
+                  setImageData(Object.values(completeProfileData?.imageMedia));
                 } else {
                   setImageData([]);
                 }
-                if (profileData.videoMedia) {
-                  setVideoData(Object.values(profileData.videoMedia));
+                if (completeProfileData.videoMedia) {
+                  setVideoData(Object.values(completeProfileData.videoMedia));
                 } else {
                   setVideoData([]);
                 }
-                if (profileData.voiceMedia) {
-                  setAudioData(Object.values(profileData.voiceMedia));
+                if (completeProfileData.voiceMedia) {
+                  setAudioData(Object.values(completeProfileData.voiceMedia));
                 } else {
                   setAudioData([]);
                 }
@@ -531,6 +536,7 @@ export default function ViewProfile() {
             {destails && <ViewDetails userViewProfile={userViewProfile} />}
             {aiAssistant && (
               <div className="w-full p-4">
+                {console.log('ViewProfile - userViewProfile:', userViewProfile)}
                 <Chatbot 
                   isActive={true}
                   userProfile={userViewProfile}
