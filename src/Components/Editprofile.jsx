@@ -139,17 +139,57 @@ export default function Editprofile() {
   const { id } = useParams();
 
   let [userdata, setUserdata] = useState("");
+  const formatDateWithTimeZone = (dateString, timeZone = "UTC") => {
+    if (!dateString) return "";
+    try {
+      let date;
+      if (typeof dateString === 'string') {
+        if (dateString.includes('T')) {
+          date = new Date(dateString);
+        } else {
+          const [year, month, day] = dateString.split('-').map(Number);
+          date = new Date(year, month - 1, day);
+        }
+      } else if (dateString instanceof Date) {
+        date = dateString;
+      } else {
+        return "";
+      }
+
+      if (isNaN(date.getTime())) {
+        return "";
+      }
+
+      return new Intl.DateTimeFormat("en-US", {
+        timeZone,
+        year: "numeric",
+        month: "short",
+        day: "2-digit"
+      }).format(date);
+    } catch (error) {
+      console.error('Invalid date format:', error);
+      return "";
+    }
+  };
+
   const getSingleChild = () => {
     const starCountRef = ref(db, `Profile/${id}`);
 
     onValue(starCountRef, async (snapshot) => {
       const data = await snapshot.val();
-      console.log(data);
-      console.log("testing data");
-      setUserdata(data);
-      dispatch(setUserProfile(data));
+      if (data) {
+        // Format dates before setting the state
+        const formattedData = {
+          ...data,
+          birthDate: formatDateWithTimeZone(data.birthDate),
+          deathDate: formatDateWithTimeZone(data.deathDate)
+        };
+        setUserdata(formattedData);
+        dispatch(setUserProfile(formattedData));
+      }
     });
   };
+
   useEffect(() => {
     getSingleChild();
     
@@ -562,14 +602,8 @@ export default function Editprofile() {
           <h1 className="text-[16px] font-bold mt-1 text-[#062A27]">
             {userProfile?.firstName} {userProfile?.lastName}
           </h1>
-          <h1 className="text-[14px] font-bold  mt-1 text-[#062A27]">
-            {userProfile?.birthDate === "Invalid Date"
-              ? ""
-              : userProfile?.birthDate}{" "}
-            {userProfile?.deathDate === "Invalid Date" ? "" : "-"}{" "}
-            {userProfile?.deathDate === "Invalid Date"
-              ? ""
-              : userProfile?.deathDate}{" "}
+          <h1 className="text-[14px] font-bold mt-1 text-[#062A27]">
+            {userProfile?.birthDate} {userProfile?.birthDate && userProfile?.deathDate ? "-" : ""} {userProfile?.deathDate}
           </h1>
           {/* <p
             className={`font-bold text-[16px] flex items-center ${

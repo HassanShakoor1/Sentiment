@@ -105,7 +105,7 @@ export default function Timeline({toast}) {
             const sortedTimeline = timelineArray.sort((a, b) => {
               const dateA = new Date(a.timelineDate);
               const dateB = new Date(b.timelineDate);
-              return dateA - dateB;
+              return dateB - dateA; // Sort in descending order (newest first)
             });
             setEvents(sortedTimeline);
           } else {
@@ -504,6 +504,23 @@ const calculateAge = (birthDate, deathDate) => {
   }
 };
 
+const formatTimelineDate = (dateString) => {
+  if (!dateString) return "";
+  try {
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) return "";
+    
+    return new Intl.DateTimeFormat("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "2-digit"
+    }).format(date);
+  } catch (error) {
+    console.error('Error formatting date:', error);
+    return "";
+  }
+};
+
   return (
     <>
     {loading ? (
@@ -536,7 +553,7 @@ const calculateAge = (birthDate, deathDate) => {
       <div key={index} className="flex justify-start w-[100%] mt-3 flex-col">
         <div className="w-[100%] flex justify-between">
           <div className="w-[100px] h-[30px] font-bold Satoshi-bold flex justify-center text-[12px] whitespace-nowrap items-center rounded-[5px] bg-[#D3E8E6]">
-            {formatDateNew(item?.timelineDate)}
+            {formatTimelineDate(item?.timelineDate)}
           </div>
           <div className="w-[100px] flex justify-end">
             <FiMoreVertical
