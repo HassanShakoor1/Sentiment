@@ -128,6 +128,13 @@ export default function Chatbot({ userProfile, isActive }) {
     setIsTyping(true);
     setError(null);
 
+    // Check if API key is available
+    if (!import.meta.env.VITE_COHERE_API_KEY) {
+      setError('API key is not configured. Please check your environment variables.');
+      setIsTyping(false);
+      return;
+    }
+
     try {
       const response = await fetch('https://api.cohere.ai/v1/chat', {
         method: 'POST',
@@ -151,6 +158,9 @@ export default function Chatbot({ userProfile, isActive }) {
 
       if (!response.ok) {
         const errorData = await response.json();
+        if (response.status === 401) {
+          throw new Error('Invalid API key. Please check your environment variables in the hosting platform.');
+        }
         throw new Error(errorData.message || 'Failed to get response from AI service');
       }
 
